@@ -35,8 +35,8 @@ cfg.password = "*"
 cfg.toFile("configuration.json")
 
 print("test nonexistent file")
-cfg = Configuration.fromFile("doesnotexist")
-print(cfg.getConfiguration())
+nocfg = Configuration.fromFile("doesnotexist")
+print(nocfg.getConfiguration())
 
 import urllib.request
 with urllib.request.urlopen('http://python.org/') as response:
@@ -58,3 +58,14 @@ if t1 < time.gmtime():
     print("expired")
 else:
     print("still valid")
+
+from bestway import Bestway, BestwayUserToken
+token = BestwayUserToken("", "", 0)
+api = Bestway("https://")
+if api.isTokenExpired(token):
+    print("Token expired - need to renew")
+else:
+    print("Token OK")
+
+cfg.token = token.getData()
+cfg.toFile("configuration.json")

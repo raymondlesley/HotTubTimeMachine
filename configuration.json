@@ -1,4 +1,9 @@
 {
   "username": "raymond",
-  "password": "*"
+  "password": "*",
+  "token": {
+    "user_id": "",
+    "user_token": "",
+    "expiry": 0
+  }
 }

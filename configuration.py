@@ -3,8 +3,7 @@ import json
 DEFAULT_CONFIG = {
     "username": "unset",
     "password": "NONE",
-    "token": "",
-    "tokenexpiry": 0
+    "token": {},
 }
 
 class Configuration:
