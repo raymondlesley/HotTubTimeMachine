@@ -2,6 +2,7 @@
 """ Tailored for Hot Tub control and monitoring """
 """ See: https://github.com/cdpuk/ha-bestway/blob/main/custom_components/bestway/bestway.py"""
 
+ENCODING = "utf=8"
 HEADERS = {
     "Content-type": "application/json; charset=UTF-8",
     "X-Gizwits-Application-Id": "98754e684ec045528b073876c34c7348",
@@ -21,12 +22,17 @@ class BestwayUserToken:
         self.user_token = token
         self.expiry = expiry
 
+    @classmethod
+    def fromDict(self, d):
+        return BestwayUserToken(d["user_id"], d["user_token"], d["expiry"])
+
     def getData(self):
         return self.__dict__
 
 
 import urllib
 import time
+import json
 
 class Bestway:
     def __init__(self, baseURL):
@@ -37,7 +43,8 @@ class Bestway:
 
     def getUserToken(self, username, password):
         body = {"username": username, "password": password, "lang": "en"}
-        r = self._POST("/app/login")
+        body_data = json.dumps(body).encode(ENCODING)
+        r = self._POST("/app/login", body_data)
         return BestwayUserToken(response.uid, r.token, r.expire_at)
 
     def _POST(self, path, data):

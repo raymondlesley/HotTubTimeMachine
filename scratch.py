@@ -31,7 +31,6 @@ print("... and from file...")
 cfg = Configuration.fromFile("configuration.json")
 print("username=\"%s\""%(cfg.username))
 
-cfg.password = "*"
 cfg.toFile("configuration.json")
 
 print("test nonexistent file")
@@ -53,19 +52,24 @@ print(result)
 
 import time
 t1 = time.gmtime(1667765155)
-print(time.asctime(t1))
+print("Token expires:", time.asctime(t1))
 if t1 < time.gmtime():
     print("expired")
 else:
     print("still valid")
 
 from bestway import Bestway, BestwayUserToken
-token = BestwayUserToken("", "", 0)
-api = Bestway("https://")
+try:
+    token = BestwayUserToken.fromDict(cfg.token)
+except:
+    token = BestwayUserToken("", "", 0)
+api = Bestway("https://euapi.gizwits.com")
 if api.isTokenExpired(token):
     print("Token expired - need to renew")
+    token = api.getUserToken(cfg.username, cfg.password)
+    print(token.getData())
 else:
-    print("Token OK")
+    print("Token OK - expires", time.asctime(time.gmtime(token.expiry)))
 
 cfg.token = token.getData()
 cfg.toFile("configuration.json")
