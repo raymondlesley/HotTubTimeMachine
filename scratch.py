@@ -48,11 +48,13 @@ if api.isTokenExpired(token):
 else:
     logging.info(f"Token OK - expires: {time.asctime(time.gmtime(token.expiry))}")
 
+logging.info("Getting devices")
 results = api.get_devices(token)
 logging.info(results)
 for device in results["devices"]:
     logging.info(f"found: {device['dev_alias']} ({device['product_name']}): {device['did']}")
 
+logging.info("Getting device info")
 results = api.get_device_info(token, cfg.did)
 logging.info(results)
 
