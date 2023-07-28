@@ -81,7 +81,7 @@ print("Check token validity")
 try:
     token = BestwayUserToken(cfg.token)
 except:
-    token = BestwayUserToken("", "", 0)
+    token = BestwayUserToken.from_values("", "", 0)
 print("init Bestway API")
 api = Bestway("https://euapi.gizwits.com")
 if api.isTokenExpired(token):
@@ -93,7 +93,7 @@ else:
 
 """
 print("Check token passing")
-invalid_token = BestwayUserToken({"user_id": "uid", "user_token": "blah", "expiry": 0})
+invalid_token = BestwayUserToken.from_values("no-uid", "blah", ""})
 print(f"before: {invalid_token}")
 mangler = testbed()
 mangler.do_stuff(invalid_token)

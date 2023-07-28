@@ -2,9 +2,11 @@
 """ Tailored for Hot Tub control and monitoring """
 """ See: https://github.com/cdpuk/ha-bestway/blob/main/custom_components/bestway/bestway.py"""
 
-import urllib
+import urllib.request as request
 import time
 import json
+
+from bestway_user_token import BestwayUserToken
 
 # =====================================
 # CONSTANTS
@@ -31,11 +33,11 @@ class Bestway:
         body = {"username": username, "password": password, "lang": "en"}
         body_data = json.dumps(body).encode(ENCODING)
         r = self._POST("/app/login", body_data)
-        return BestwayUserToken(response.uid, r.token, r.expire_at)
+        return BestwayUserToken(r.uid, r.token, r.expire_at)
 
     def _POST(self, path, data):
-        req = urllib.request.Request(f"{self.baseURL}{path}", headers=HEADERS, data=data)  # POST
-        resp = urllib.request.urlopen(req)
+        req = request.Request(f"{self.baseURL}{path}", headers=HEADERS, data=data)  # POST
+        resp = request.urlopen(req)
         content = resp.read()
         result = json.loads(content)
         return result

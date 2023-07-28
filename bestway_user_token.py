@@ -11,15 +11,14 @@ class BestwayUserToken:
     user_token: str
     expiry: int
 
-    def __init__(self, uid:str, token:str, expiry:int):
-        self.user_id = uid
-        self.user_token = token
-        self.expiry = expiry
-
     def __init__(self, d:dict):
         self.user_id = d["user_id"]
         self.user_token = d["user_token"]
         self.expiry = d["expiry"]
+
+    @classmethod
+    def from_values(self, uid:str, token:str, expiry:int):
+        return BestwayUserToken({"user_id": uid, "user_token": token, "expiry": expiry})
 
     def __iter__(self):
         yield "user_id", self.user_id
