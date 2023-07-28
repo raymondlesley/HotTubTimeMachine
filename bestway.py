@@ -2,6 +2,13 @@
 """ Tailored for Hot Tub control and monitoring """
 """ See: https://github.com/cdpuk/ha-bestway/blob/main/custom_components/bestway/bestway.py"""
 
+import urllib
+import time
+import json
+
+# =====================================
+# CONSTANTS
+
 ENCODING = "utf=8"
 HEADERS = {
     "Content-type": "application/json; charset=UTF-8",
@@ -9,32 +16,11 @@ HEADERS = {
 }
 TIMEOUT = 10
 
-#@dataclass
-class BestwayUserToken:
-    """User authentication token, obtained (and ideally stored) following a successful login."""
-
-    user_id: str
-    user_token: str
-    expiry: int
-
-    def __init__(self, uid, token, expiry):
-        self.user_id = uid
-        self.user_token = token
-        self.expiry = expiry
-
-    @classmethod
-    def fromDict(self, d):
-        return BestwayUserToken(d["user_id"], d["user_token"], d["expiry"])
-
-    def getData(self):
-        return self.__dict__
-
-
-import urllib
-import time
-import json
+# =====================================
 
 class Bestway:
+    """Abstraction of the Bestway web API"""
+
     def __init__(self, baseURL):
         self.baseURL = baseURL
 

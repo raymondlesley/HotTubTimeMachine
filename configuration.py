@@ -7,8 +7,13 @@ DEFAULT_CONFIG = {
 }
 
 class Configuration:
+    """Abstraction of persisted configuration"""
+
     def __init__(self, config_json=dict()):
         self.__dict__ = config_json
+
+    def __repr__(self):
+        return json.dumps(self.__dict__)
 
     def fromJson(self, config_json):
         self.__dict__ = json.loads(config_json)
