@@ -13,7 +13,7 @@ import log_config
 logging.info("Configuration from file...")
 cfg = Configuration.fromFile("configuration.json")
 logging.info(f"username=\"{cfg.username}\"")
-logging.info(cfg)
+#logging.info(cfg)
 
 logging.info("Store configuration to file")
 cfg.datetime = datetime.datetime.now().isoformat()
@@ -28,17 +28,19 @@ from bestway_user_token import BestwayUserToken
 
 logging.info("Test token from dict")
 token = BestwayUserToken(cfg.token)
-logging.info(token)
+logging.info(f"user_id={token.user_id}")
 
 logging.info("Test dict from token")
 d = dict(token)
-logging.info(d)
+logging.info(f"['user_id']='{d['user_id']}")
 
 logging.info("Check token validity")
 try:
     token = BestwayUserToken(cfg.token)
+    logging.info("token is valid")
 except:
     token = BestwayUserToken.from_values("", "", 0)
+    logging.info("error: using empty token")
 logging.info("init Bestway API")
 api = Bestway("https://euapi.gizwits.com")
 if api.is_token_expired(token):
@@ -50,12 +52,12 @@ else:
 
 logging.info("Getting devices")
 results = api.get_devices(token)
-logging.info(results)
+#logging.info(results)
 devices = {}
 for device in results:
     devices[device['did']] = {"name": device['dev_alias'], "product": device['product_name']}
-    logging.info(f"found: {device['dev_alias']} ({device['product_name']}): {device['did']}")
-    logging.info(devices[device['did']])
+    #logging.info(f"found: {device['dev_alias']} ({device['product_name']}): {device['did']}")
+    logging.info(f"{device['did']}: {devices[device['did']]}")
 
 logging.info("Getting device info")
 info = api.get_device_info(token, cfg.did)
@@ -66,6 +68,7 @@ logging.info(f"{devices[cfg.did]['name']}:"
              f" heater={'ON' if info['attr']['heat_power'] else 'OFF'}"
              )
 
+"""
 logging.info("using http library")
 import http.client
 conn = http.client.HTTPSConnection("www.bbc.co.uk")
@@ -73,11 +76,7 @@ conn.request("GET", "/nosuchendpoint", headers={"Host": "www.bbc.co.uk"})
 response = conn.getresponse()
 print(response.status, response.reason)
 print(response)
-exit()
-
-logging.info("calling invalid endpoint")
-results = api.invalid_query(token)
-logging.info(results)
+"""
 
 logging.info("Store valid token")
 cfg.token = dict(token)

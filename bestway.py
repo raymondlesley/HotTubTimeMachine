@@ -34,6 +34,7 @@ class Bestway:
 
     def __init__(self, baseURL):
         self.baseURL = baseURL
+        logging.info(f"initializing Bestway API with {baseURL}")
 
     def is_token_expired(self, token):
         return time.gmtime(token.expiry) < time.gmtime()
@@ -54,22 +55,22 @@ class Bestway:
         return token
 
     def get_devices(self, token):
+        """ retrieve list of configured devices"""
         if self.is_token_expired(token):
             raise InvalidToken()
         devices = self._get("/app/bindings", self._get_headers(token))
+        # remove unnecessary layer
         if devices['devices']:
             return devices['devices']
         else:
             return []
 
     def get_device_info(self, token, did):
+        """retrieve current device status"""
         if self.is_token_expired(token):
             raise InvalidToken()
         logging.info(f"getting info for device {did}")
         return self._get(f"/app/devdata/{did}/latest", self._get_headers(token))
-
-    def invalid_query(self, token):
-        return self._get("/app/nosuchendpoint", self._get_headers(token))
 
     def _get_headers(self, user_token):
         d = dict(HEADERS)
