@@ -41,7 +41,7 @@ except:
     token = BestwayUserToken.from_values("", "", 0)
 logging.info("init Bestway API")
 api = Bestway("https://euapi.gizwits.com")
-if api.isTokenExpired(token):
+if api.is_token_expired(token):
     logging.warning("Token expired - renewing...")
     token = api.get_user_token(cfg.username, cfg.password)
     logging.info(token)
@@ -51,11 +51,32 @@ else:
 logging.info("Getting devices")
 results = api.get_devices(token)
 logging.info(results)
-for device in results["devices"]:
+devices = {}
+for device in results:
+    devices[device['did']] = {"name": device['dev_alias'], "product": device['product_name']}
     logging.info(f"found: {device['dev_alias']} ({device['product_name']}): {device['did']}")
+    logging.info(devices[device['did']])
 
 logging.info("Getting device info")
-results = api.get_device_info(token, cfg.did)
+info = api.get_device_info(token, cfg.did)
+logging.info(info)
+logging.info(f"{devices[cfg.did]['name']}:"
+             f" {info['attr']['temp_now']}'C"
+             f" filter={'ON' if info['attr']['filter_power'] else 'OFF'}"
+             f" heater={'ON' if info['attr']['heat_power'] else 'OFF'}"
+             )
+
+logging.info("using http library")
+import http.client
+conn = http.client.HTTPSConnection("www.bbc.co.uk")
+conn.request("GET", "/nosuchendpoint", headers={"Host": "www.bbc.co.uk"})
+response = conn.getresponse()
+print(response.status, response.reason)
+print(response)
+exit()
+
+logging.info("calling invalid endpoint")
+results = api.invalid_query(token)
 logging.info(results)
 
 logging.info("Store valid token")

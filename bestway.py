@@ -35,24 +35,41 @@ class Bestway:
     def __init__(self, baseURL):
         self.baseURL = baseURL
 
-    def isTokenExpired(self, token):
+    def is_token_expired(self, token):
         return time.gmtime(token.expiry) < time.gmtime()
 
-    def get_user_token(self, username, password):
+    def get_user_token(self, username, password) -> BestwayUserToken:
+        """perform login, return token"""
         body = {"username": username, "password": password, "lang": "en"}
         body_data = json.dumps(body).encode(ENCODING)
+        logging.info("logging in")
         r = self._post("/app/login", dict(HEADERS), body_data)
         return BestwayUserToken.from_values(r.uid, r.token, r.expire_at)
 
+    def check_login(self, token, username, password) -> BestwayUserToken:
+        """check and refresh token, logging in with username and password if required"""
+        if self.is_token_expired(token):
+            logging.warning("token expired - logging in")
+            token = self.get_user_token(username, password)
+        return token
+
     def get_devices(self, token):
-        if self.isTokenExpired(token):
+        if self.is_token_expired(token):
             raise InvalidToken()
-        return self._get("/app/bindings", self._get_headers(token))
+        devices = self._get("/app/bindings", self._get_headers(token))
+        if devices['devices']:
+            return devices['devices']
+        else:
+            return []
 
     def get_device_info(self, token, did):
-        if self.isTokenExpired(token):
+        if self.is_token_expired(token):
             raise InvalidToken()
+        logging.info(f"getting info for device {did}")
         return self._get(f"/app/devdata/{did}/latest", self._get_headers(token))
+
+    def invalid_query(self, token):
+        return self._get("/app/nosuchendpoint", self._get_headers(token))
 
     def _get_headers(self, user_token):
         d = dict(HEADERS)
