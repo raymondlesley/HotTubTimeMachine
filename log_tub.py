@@ -1,6 +1,11 @@
-#
+#!/usr/bin/python
 # log_tub - log Hot Tub current temperature, status to file
 #
+
+# TODO: add command-line option for config file
+# TODO: add config options for gizwits API URL, output filename
+# TODO: refactor log_config to be fn(), taking options (gleaned from command-line here)
+# TODO: refactor Bestway API class(es) into library
 
 import logging
 import log_config
