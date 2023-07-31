@@ -32,5 +32,8 @@ class Configuration:
         with open(filename, 'w') as json_data:
             json.dump(self.__dict__, json_data, indent=2)
 
+    def __getitem__(self, item):
+        return self.__dict__.get(item)
+
     def getConfiguration(self):
         return self.__dict__

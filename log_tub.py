@@ -2,7 +2,6 @@
 # log_tub - log Hot Tub current temperature, status to file
 #
 
-# TODO: add config options for gizwits API URL, output filename
 # TODO: refactor Bestway API class(es) into library
 
 import argparse
@@ -20,6 +19,7 @@ from bestway_user_token import BestwayUserToken
 # CONSTANTS
 CFGFILENAME = 'configuration.json'
 LOGFILENAME = 'tub_log.csv'
+GIZWITS_URL = 'https://euapi.gizwits.com'
 
 # parse arguments
 argparser = argparse.ArgumentParser(prog="log_tub.py", description="Hot Hub logger")
@@ -69,9 +69,14 @@ else:
     csvfile = open(args.logfile, 'a')
     writer = csv.writer(csvfile, delimiter=',', quotechar='"', lineterminator="\n")
 
+# check Gizwits URL
+if not cfg['gizwits_url']:
+    cfg.gizwits_url = GIZWITS_URL
+    logging.info(f"Using {cfg.gizwits_url}")
+
 logging.info("Logging in")
 token = BestwayUserToken(cfg.token)
-api = Bestway("https://euapi.gizwits.com")
+api = Bestway(cfg.gizwits_url)
 token = api.check_login(token, cfg.username, cfg.password)
 
 logging.info("Getting device info")
