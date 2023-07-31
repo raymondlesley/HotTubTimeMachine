@@ -11,7 +11,6 @@ import log_config
 import csv
 import os
 import sys
-import time
 import datetime
 
 from configuration import Configuration
@@ -85,4 +84,9 @@ writer.writerow([datetime.datetime.now().isoformat(),
                  info['attr']['filter_power'],
                  info['attr']['heat_power']
                 ])
+
+logging.info("Saving configuration")
+cfg.token = dict(token)
+cfg.toFile(args.cfgfile)
+
 logging.info("Done.")
