@@ -13,8 +13,8 @@ import sys
 import datetime
 
 from configuration import Configuration
-from bestway import Bestway
-from bestway_user_token import BestwayUserToken
+from bestway.bestway import Bestway
+from bestway.bestway_user_token import BestwayUserToken
 
 # CONSTANTS
 CFGFILENAME = 'configuration.json'

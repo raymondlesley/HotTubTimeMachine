@@ -6,12 +6,10 @@
 from configuration import Configuration
 import datetime
 import time
-from testbed import testbed
 import logging
-import log_config
 
 logging.info("Configuration from file...")
-cfg = Configuration.fromFile("configuration.json")
+cfg = Configuration.fromFile("../configuration.json")
 logging.info(f"username=\"{cfg.username}\"")
 #logging.info(cfg)
 
@@ -23,8 +21,8 @@ logging.info("test nonexistent file")
 nocfg = Configuration.fromFile("doesnotexist")
 logging.info(nocfg)
 
-from bestway import Bestway
-from bestway_user_token import BestwayUserToken
+from bestway.bestway import Bestway
+from bestway.bestway_user_token import BestwayUserToken
 
 logging.info("Test token from dict")
 token = BestwayUserToken(cfg.token)

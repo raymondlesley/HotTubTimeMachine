@@ -1,4 +1,4 @@
-from bestway_user_token import BestwayUserToken
+from bestway.bestway_user_token import BestwayUserToken
 
 class testbed:
     def do_stuff(self, token:BestwayUserToken):

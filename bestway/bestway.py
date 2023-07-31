@@ -7,7 +7,7 @@ import time
 import json
 import logging
 
-from bestway_user_token import BestwayUserToken
+from bestway.bestway_user_token import BestwayUserToken
 
 # =====================================
 # CONSTANTS
