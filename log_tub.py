@@ -3,7 +3,6 @@
 #
 
 # TODO: add config options for gizwits API URL, output filename
-# TODO: refactor log_config to be fn(), taking options (gleaned from command-line here)
 # TODO: refactor Bestway API class(es) into library
 
 import argparse
@@ -31,6 +30,9 @@ argparser.add_argument('-f', '--logfile', help="full pathname of output log file
 argparser.add_argument('--log=INFO', help="(deprecated - for backward compatibility)", action='store_true')
 args = argparser.parse_args()
 
+# setup logging
+log_config.prepare_logging(args.loglevel)
+# setup logfile filename
 if not args.cfgfile:
     args.cfgfile = os.path.join(os.path.dirname(sys.argv[0]), CFGFILENAME)
     logging.info(f"using configuration file {args.cfgfile}")
