@@ -1,4 +1,4 @@
-""" Bestway - absration of the Bestway Web API """
+""" Bestway - abstraction of the Bestway Web API """
 """ Tailored for Hot Tub control and monitoring """
 """ See: https://github.com/cdpuk/ha-bestway/blob/main/custom_components/bestway/"""
 
