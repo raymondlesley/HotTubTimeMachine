@@ -1,6 +1,6 @@
 """ Bestway - absration of the Bestway Web API """
 """ Tailored for Hot Tub control and monitoring """
-""" See: https://github.com/cdpuk/ha-bestway/blob/main/custom_components/bestway/bestway.py"""
+""" See: https://github.com/cdpuk/ha-bestway/blob/main/custom_components/bestway/"""
 
 import urllib.request as request
 import time
@@ -42,9 +42,8 @@ class Bestway:
     def get_user_token(self, username, password) -> BestwayUserToken:
         """perform login, return token"""
         body = {"username": username, "password": password, "lang": "en"}
-        body_data = json.dumps(body).encode(ENCODING)
         logging.info("logging in")
-        r = self._post("/app/login", dict(HEADERS), body_data)
+        r = self._post("/app/login", dict(HEADERS), body)
         return BestwayUserToken.from_values(r.uid, r.token, r.expire_at)
 
     def check_login(self, token, username, password) -> BestwayUserToken:
@@ -65,12 +64,20 @@ class Bestway:
         else:
             return []
 
-    def get_device_info(self, token, did):
+    def get_device_info(self, token, device_id):
         """retrieve current device status"""
         if self.is_token_expired(token):
             raise InvalidToken()
-        logging.info(f"getting info for device {did}")
-        return self._get(f"/app/devdata/{did}/latest", self._get_headers(token))
+        logging.info(f"getting info for device {device_id}")
+        return self._get(f"/app/devdata/{device_id}/latest", self._get_headers(token))
+
+    def set_filter(self, token, device_id, on):
+        """set filter (pump) power state: True=on, False=off"""
+        if self.is_token_expired(token):
+            raise InvalidToken()
+        logging.info(f"setting filter power {'ON' if on else 'OFF'}")
+        body = {"attrs": {"filter_power": 1 if on else 0}}
+        self._post(f"/app/control/{device_id}", self._get_headers(token), body)
 
     def _get_headers(self, user_token):
         d = dict(HEADERS)
@@ -85,7 +92,8 @@ class Bestway:
         return result
 
     def _post(self, path, headers, data):
-        req = request.Request(f"{self.baseURL}{path}", headers=headers, data=data)  # POST
+        body_data = json.dumps(data).encode(ENCODING)
+        req = request.Request(f"{self.baseURL}{path}", headers=headers, data=body_data)  # POST
         resp = request.urlopen(req)
         content = resp.read()
         result = json.loads(content)
