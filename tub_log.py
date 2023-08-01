@@ -2,8 +2,6 @@
 # log_tub - log Hot Tub current temperature, status to file
 #
 
-# TODO: refactor Bestway API class(es) into library
-
 import argparse
 import logging
 import log_config
@@ -26,7 +24,6 @@ argparser = argparse.ArgumentParser(prog="tub_log.py", description="Hot Hub logg
 argparser.add_argument('-c', '--cfgfile', help="location of configuration file; default='configuration.json'")
 argparser.add_argument('-l', '--loglevel', help="logging level: INFO, DEBUG, WARNING, ERROR, CRITICAL")
 argparser.add_argument('-f', '--logfile', help="full pathname of output log file")
-argparser.add_argument('--log=INFO', help="(deprecated - for backward compatibility)", action='store_true')
 args = argparser.parse_args()
 
 # setup logging
