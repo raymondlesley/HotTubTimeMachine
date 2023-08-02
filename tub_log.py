@@ -11,7 +11,7 @@ import sys
 import datetime
 
 from configuration import Configuration
-from bestway.bestway import Bestway
+from bestway.bestwayapi import BestwayAPI
 from bestway.bestway_user_token import BestwayUserToken
 
 # CONSTANTS
@@ -73,7 +73,7 @@ if not cfg['gizwits_url']:
 
 logging.info("Logging in")
 token = BestwayUserToken(cfg.token)
-api = Bestway(cfg.gizwits_url)
+api = BestwayAPI(cfg.gizwits_url)
 token = api.check_login(token, cfg.username, cfg.password)
 
 logging.info("Getting device info")

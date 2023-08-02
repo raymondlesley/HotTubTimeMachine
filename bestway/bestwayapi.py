@@ -29,7 +29,7 @@ class InvalidToken(Exception):
 
 # =====================================
 
-class Bestway:
+class BestwayAPI:
     """Abstraction of the Bestway web API"""
 
     def __init__(self, baseURL):

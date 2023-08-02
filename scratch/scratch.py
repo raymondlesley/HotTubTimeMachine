@@ -21,7 +21,7 @@ logging.info("test nonexistent file")
 nocfg = Configuration.fromFile("doesnotexist")
 logging.info(nocfg)
 
-from bestway.bestway import Bestway
+from bestway.bestwayapi import BestwayAPI
 from bestway.bestway_user_token import BestwayUserToken
 
 logging.info("Test token from dict")
@@ -40,7 +40,7 @@ except:
     token = BestwayUserToken.from_values("", "", 0)
     logging.info("error: using empty token")
 logging.info("init Bestway API")
-api = Bestway("https://euapi.gizwits.com")
+api = BestwayAPI("https://euapi.gizwits.com")
 if api.is_token_expired(token):
     logging.warning("Token expired - renewing...")
     token = api.get_user_token(cfg.username, cfg.password)
