@@ -48,7 +48,11 @@ token = api.check_login(token, cfg.username, cfg.password)
 if not args.state:
     logging.info("Getting device info")
     info = api.get_device_info(token, cfg.did)
-    print(f"Filter pump is {'ON' if info['attr']['filter_power'] else 'OFF'}")
+    attrs = info['attr']
+    logging.debug(attrs)
+    print(f"Temperature is {attrs['temp_now']}°{'C' if attrs['temp_set_unit'] == '摄氏' else 'F'}")
+    print(f"Filter pump is {'ON' if attrs['filter_power'] else 'OFF'}")
+    print(f"Heater is {'ON' if attrs['heat_power'] else 'OFF'}")
 elif args.state not in STATES:
     logging.error(f"{args.state} is an invalid state - must be one of: on, off")
 else:
