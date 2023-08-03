@@ -23,7 +23,7 @@ GIZWITS_URL = 'https://euapi.gizwits.com'
 argparser = argparse.ArgumentParser(prog="tub_log.py", description="Hot Hub logger")
 argparser.add_argument('-c', '--cfgfile', help="location of configuration file; default='configuration.json'")
 argparser.add_argument('-l', '--loglevel', help="logging level: INFO, DEBUG, WARNING, ERROR, CRITICAL")
-argparser.add_argument('-f', '--logfile', help="full pathname of output log file")
+argparser.add_argument('-o', '--output', help="full pathname of output CSV file")
 args = argparser.parse_args()
 
 # setup logging
@@ -32,17 +32,17 @@ log_config.prepare_logging(args.loglevel)
 if not args.cfgfile:
     args.cfgfile = os.path.join(os.path.dirname(sys.argv[0]), CFGFILENAME)
     logging.info(f"using configuration file {args.cfgfile}")
-if not args.logfile:
-    args.logfile = os.path.join(os.path.dirname(sys.argv[0]), LOGFILENAME)
+if not args.output:
+    args.output = os.path.join(os.path.dirname(sys.argv[0]), LOGFILENAME)
 
 logging.info("Load configuration from file...")
 cfg = Configuration.fromFile(args.cfgfile)
 
-logging.info(f"preparing CSV file: {args.logfile}")
+logging.info(f"preparing CSV file: {args.output}")
 csvfile = None
 newfile = True
 try:
-    csvfile = open(args.logfile, newline='')
+    csvfile = open(args.output, newline='')
     newfile = False
     firstline = csvfile.readline(256)
     if not csv.Sniffer().has_header(firstline):
@@ -58,12 +58,12 @@ except csv.Error as err:
 
 if newfile:
     logging.info("Starting new log file")
-    csvfile = open(args.logfile, 'w')
+    csvfile = open(args.output, 'w')
     writer = csv.writer(csvfile, delimiter=',', quotechar='"', lineterminator="\n")
     writer.writerow(['TIME', 'TEMP_C', 'FILTER', 'HEAT'])
 else:
     logging.info("Preparing to append to log file")
-    csvfile = open(args.logfile, 'a')
+    csvfile = open(args.output, 'a')
     writer = csv.writer(csvfile, delimiter=',', quotechar='"', lineterminator="\n")
 
 # check Gizwits URL
