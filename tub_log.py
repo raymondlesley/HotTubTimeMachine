@@ -23,7 +23,7 @@ GIZWITS_URL = 'https://euapi.gizwits.com'
 argparser = argparse.ArgumentParser(prog="tub_log.py", description="Hot Hub logger")
 argparser.add_argument('-c', '--cfgfile', help="location of configuration file; default='configuration.json'")
 argparser.add_argument('-l', '--loglevel', help="logging level: INFO, DEBUG, WARNING, ERROR, CRITICAL")
-argparser.add_argument('-o', '--output', help="full pathname of output CSV file")
+argparser.add_argument('-o', '--output', help=f"full pathname of output CSV file; default='{LOGFILENAME}'")
 args = argparser.parse_args()
 
 # setup logging
