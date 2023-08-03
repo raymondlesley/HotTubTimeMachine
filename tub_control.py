@@ -19,7 +19,7 @@ CFGFILENAME = 'configuration.json'
 GIZWITS_URL = 'https://euapi.gizwits.com'
 STATES      = ['on', 'off']
 # parse arguments
-argparser = argparse.ArgumentParser(prog="tub_control.py", description="Hot Tub filter pump control")
+argparser = argparse.ArgumentParser(prog="tub_control.py", description="Hot Tub filter pump control", epilog="with no control arguments [-P, -H, -T] prints current status")
 argparser.add_argument('-c', '--cfgfile', help="location of configuration file; default='configuration.json'")
 argparser.add_argument('-l', '--loglevel', help="logging level: INFO, DEBUG, WARNING, ERROR, CRITICAL")
 argparser.add_argument('-P', '--pump', choices=STATES, help="set pump 'on' or 'off'")
