@@ -25,6 +25,8 @@ argparser.add_argument('-l', '--loglevel', help="logging level: INFO, DEBUG, WAR
 argparser.add_argument('-P', '--pump', choices=STATES, help="set pump 'on' or 'off'")
 argparser.add_argument('-H', '--heat', choices=STATES, help="set heater 'on' or 'off'")
 argparser.add_argument('-T', '--temp', type=int, help="set target temperature")
+argparser.add_argument('-B', '--bubbles', choices=STATES, help="turn bubbles 'on' or 'off'")
+argparser.add_argument('-S', '--schedule', type=int, nargs=2, help="schedule heater: delay, runtime in minutes")
 args = argparser.parse_args()
 
 # setup logging
@@ -47,13 +49,31 @@ token = BestwayUserToken(cfg.token)
 api = BestwayAPI(cfg.gizwits_url)
 token = api.check_login(token, cfg.username, cfg.password)
 
+controlling = False
+pump = None
+heat = None
+temp = None
+bubbles = None
+delay = None
+timer = None
+
 if args.pump:
     logging.info(f"Setting filter pump {'ON' if args.pump == 'on' else 'OFF'}")
-    api.set_filter(token, cfg.did, args.pump == 'on')
-elif args.heat:
+    pump = args.pump == 'on'
+    controlling = True
+if args.heat:
     argparser.error("Heat control not (yet) implemented")
-elif args.temp:
+if args.temp:
     argparser.error("Temperature control not (yet) implemented")
+if args.bubbles:
+    argparser.error("Bubble control not (yet) implemented")
+if args.schedule:
+    logging.debug(args.schedule)
+    argparser.error("Scheduling not (yet) implemented")
+
+if controlling:
+    logging.info("applying controls")
+    api.set_controls(token, cfg.did, pump, heat, temp, bubbles, delay, timer)
 else:
     logging.info("Getting device info")
     info = api.get_device_info(token, cfg.did)
