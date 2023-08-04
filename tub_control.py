@@ -62,14 +62,22 @@ if args.pump:
     pump = args.pump == 'on'
     controlling = True
 if args.heat:
-    argparser.error("Heat control not (yet) implemented")
+    logging.info(f"Setting heater {'ON' if args.heat == 'on' else 'OFF'}")
+    heat = args.heat == 'on'
+    controlling = True
 if args.temp:
-    argparser.error("Temperature control not (yet) implemented")
+    logging.info(f"Setting target temperature to {args.temp}")
+    temp = args.temp
+    controlling = True
 if args.bubbles:
-    argparser.error("Bubble control not (yet) implemented")
+    logging.info(f"Turning bubbles {'ON' if args.bubbles == 'on' else 'OFF'}")
+    bubbles = args.bubbles == 'on'
+    controlling = True
 if args.schedule:
-    logging.debug(args.schedule)
-    argparser.error("Scheduling not (yet) implemented")
+    logging.info(f"Setting schedule: delay={args.schedule[0]} duration={args.schedule[1]}")
+    delay = args.schedule[0]
+    timer = args.schedule[1]
+    controlling = True
 
 if controlling:
     logging.info("applying controls")

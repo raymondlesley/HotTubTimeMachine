@@ -28,7 +28,7 @@ https://github.com/cdpuk/ha-bestway/blob/main/custom_components/bestway/bestway.
 
 It has grown from a proof-of-concept (which initially could only successfully log in)
 and now boasts a state logger: tub_log.py
-and tbu controls for pump on/off, heat on/off, etc.: tub_control.py
+and tub controls for pump on/off, heat on/off, etc.: tub_control.py
 
 These are designed to be run periodically (e.g. from cron)
 to automatically turn the filter pump on and off at set times
