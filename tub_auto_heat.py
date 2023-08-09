@@ -47,10 +47,26 @@ if not cfg['gizwits_url']:
     cfg.gizwits_url = GIZWITS_URL
     logging.info(f"Using {cfg.gizwits_url}")
 
+# open API
+api = BestwayAPI(cfg.gizwits_url)
+
 logging.info("Logging in")
 token = BestwayUserToken(cfg.token)
-api = BestwayAPI(cfg.gizwits_url)
 token = api.check_login(token, cfg.username, cfg.password)
+cfg.token = dict(token)
+
+# check thermal coefficients
+if not cfg['thermal'] or type(cfg['thermal']) != dict:
+    cfg.thermal = {}
+    heat_rate = cfg.thermal['heat_rate'] = HEAT_RATE
+    cool_rate = cfg.thermal['cool_rate'] = COOL_RATE
+else:
+    heat_rate = cfg.thermal.get('heat_rate')
+    cool_rate = cfg.thermal.get('cool_rate')
+if heat_rate is None:
+    cfg.thermal['heat_rate'] = heat_rate = HEAT_RATE
+if cool_rate is None:
+    cfg.thermal['cool_rate'] = cool_rate = COOL_RATE
 
 controlling = False
 pump = None
@@ -96,8 +112,8 @@ if controlling:
     while (start_time + time_to_heat) < minutes_to_go:
         # walk forwards from now until the time to start heating is reached
         start_time += STEP_RATE
-        tracked_temp -= STEP_RATE * COOL_RATE
-        time_to_heat = int((target_temp - tracked_temp) / HEAT_RATE)
+        tracked_temp -= STEP_RATE * cool_rate
+        time_to_heat = int((target_temp - tracked_temp) / heat_rate)
         logging.debug(f"temp after {start_time} minutes = {tracked_temp:.1f}; {time_to_heat} mins heating needed")
     start_time = minutes_to_go - time_to_heat
     logging.info(f"Setting timer to start in {start_time} minutes; heat for {time_to_heat} minutes")
@@ -107,3 +123,8 @@ else:
     print(f"Target temperature {attrs['temp_set']}")
     print(f"Temperature now {attrs['temp_now']}")
     print(f"Programmed to heat for {attrs['heat_timer_min']} minutes, starting in {attrs['heat_appm_min']} minutes")
+
+logging.info("Saving configuration")
+cfg.toFile(args.cfgfile)
+
+logging.info("Done.")
