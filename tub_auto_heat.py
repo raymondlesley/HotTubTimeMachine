@@ -22,6 +22,8 @@ STATES      = ['on', 'off']
 STEP_RATE   = 10  # minutes per iteration for calculating heat time
 HEAT_RATE   = 1.0/45  # degrees per minute
 COOL_RATE   = 1.0/300 # degrees per minutes
+ECO_MINS    = 7 * 60
+ECO_END     = "07:30"
 
 # parse arguments
 argparser = argparse.ArgumentParser(prog="tub_control.py", description="Hot Tub auto heat control", epilog="with no control arguments [-P, -H, -T] prints current status")
@@ -29,7 +31,7 @@ argparser.add_argument('-c', '--cfgfile', help="location of configuration file; 
 argparser.add_argument('-l', '--loglevel', help="logging level: INFO, DEBUG, WARNING, ERROR, CRITICAL")
 argparser.add_argument('-P', '--pump', choices=STATES, default='off', help="set pump 'on' or 'off' before scheduling, default 'off'")
 argparser.add_argument('-T', '--temp', type=int, help="override target temperature")
-argparser.add_argument('-7', '--economyseven', default='07:30', help="time on day when Economy 7 ends, default = '07:30'")
+argparser.add_argument('-7', '--economyseven', default=ECO_END, help="time on day when Economy 7 ends, default = '07:30'")
 args = argparser.parse_args()
 
 # setup logging
@@ -115,9 +117,13 @@ if controlling:
         tracked_temp -= STEP_RATE * cool_rate
         time_to_heat = int((target_temp - tracked_temp) / heat_rate)
         logging.debug(f"temp after {start_time} minutes = {tracked_temp:.1f}; {time_to_heat} mins heating needed")
-    start_time = minutes_to_go - time_to_heat
-    logging.info(f"Setting timer to start in {start_time} minutes; heat for {time_to_heat} minutes")
-    api.set_controls(token, cfg.did, pump, None, target_temp, None, start_time, time_to_heat)
+    if time_to_heat > 0:
+        if time_to_heat > ECO_MINS: time_to_heat = ECO_MINS
+        start_time = minutes_to_go - time_to_heat
+        logging.info(f"Setting timer to start in {start_time} minutes; heat for {time_to_heat} minutes")
+        api.set_controls(token, cfg.did, pump, None, target_temp, None, start_time, time_to_heat)
+    else:
+        logging.info(f"temperature ({float(attrs['temp_now'])}) projected to end at {tracked_temp:.1f} - over setpoint {target_temp}")
 else:
     # TODO: decide how to indicate "report-only" operation
     print(f"Target temperature {attrs['temp_set']}")
