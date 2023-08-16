@@ -121,9 +121,13 @@ if controlling:
         if time_to_heat > ECO_MINS: time_to_heat = ECO_MINS
         start_time = minutes_to_go - time_to_heat
         logging.info(f"Setting timer to start in {start_time} minutes; heat for {time_to_heat} minutes")
-        api.set_controls(token, cfg.did, pump, None, target_temp, None, start_time, time_to_heat)
-    else:
+    elif time_to_heat <= 0:
+        # -ve heating time - indicates will still be > target temperature after cooling
+        start_time = None
+        time_to_heat= None
         logging.info(f"temperature ({float(attrs['temp_now'])}) projected to end at {tracked_temp:.1f} - over setpoint {target_temp}")
+    logging.info("Sending to Hot Tub")
+    api.set_controls(token, cfg.did, pump, None, target_temp, None, start_time, time_to_heat)
 else:
     # TODO: decide how to indicate "report-only" operation
     print(f"Target temperature {attrs['temp_set']}")
