@@ -20,8 +20,8 @@ CFGFILENAME = 'configuration.json'
 GIZWITS_URL = 'https://euapi.gizwits.com'
 STATES      = ['on', 'off']
 STEP_RATE   = 10  # minutes per iteration for calculating heat time
-HEAT_RATE   = 1.0/45  # degrees per minute
-COOL_RATE   = 1.0/300 # degrees per minutes
+HEAT_RATE   = 45  # minutes per degree
+COOL_RATE   = 300 # minutes per degree
 ECO_MINS    = 7 * 60
 ECO_END     = "07:30"
 
@@ -114,8 +114,8 @@ if controlling:
     while (start_time + time_to_heat) < minutes_to_go:
         # walk forwards from now until the time to start heating is reached
         start_time += STEP_RATE
-        tracked_temp -= STEP_RATE * cool_rate
-        time_to_heat = int((target_temp - tracked_temp) / heat_rate)
+        tracked_temp -= STEP_RATE / cool_rate
+        time_to_heat = int((target_temp - tracked_temp) * heat_rate)
         logging.debug(f"temp after {start_time} minutes = {tracked_temp:.1f}; {time_to_heat} mins heating needed")
     if time_to_heat > 0:
         if time_to_heat > ECO_MINS: time_to_heat = ECO_MINS
