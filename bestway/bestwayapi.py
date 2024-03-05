@@ -1,6 +1,8 @@
 """ Bestway - abstraction of the Bestway Web API """
 """ Tailored for Hot Tub control and monitoring """
 """ See: https://github.com/cdpuk/ha-bestway/blob/main/custom_components/bestway/"""
+""" See: https://docs.gizwits.com/en-us/cloud/OpenAPI.html"""
+""" See: https://docs.gizwits.com/en-us/UserManual/UseOpenAPI.html"""
 
 import urllib.request as request
 import time
