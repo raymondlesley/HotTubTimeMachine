@@ -111,6 +111,9 @@ if controlling:
     logging.debug(f"Temp now = {tracked_temp}")
     start_time = 0
     logging.debug(f"target temperature {target_temp} in {minutes_to_go} minutes")
+    # TODO: convert iterative algorithm to use algebraic calculation
+    #       From symbolab.com/solver: heat_time = (Tend - Tstart + cool_rate * total_time) /  (heat_rate + cool_rate)
+    #       (See my Google sheet "Hot Hub Heating Timer")
     while (start_time + time_to_heat) < minutes_to_go:
         # walk forwards from now until the time to start heating is reached
         start_time += STEP_RATE
