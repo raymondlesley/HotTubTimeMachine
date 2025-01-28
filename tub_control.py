@@ -1,9 +1,11 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # tub_control - control Hot Tub filter pump
 #
 
 import argparse
 import logging
+from tarfile import version
+
 import log_config
 import csv
 import os
@@ -81,20 +83,76 @@ if args.schedule:
 
 logging.info("checking devices")
 devices = api.get_devices(token)
-logging.info(f"Devices: {devices}")
+logging.debug(f"Devices: {devices}")
+
+device_info = {}
+logging.info("Found devices:")
+for device in devices:
+    logging.info(f"  Device: {device['dev_alias']} ({device['product_name']} = {device['did']})")
+    device_info[device['did']] = {'name': device['dev_alias'], 'type': device['product_name']}
+
+# check configured device exists
+if not cfg.did in device_info.keys():
+    logging.error(f"No device with did {cfg.did} associated with account")
+    sys.exit("Unable to continue. Exiting.")
+else:
+    our_device = device_info[cfg.did]
+    device_type = our_device['type']
+    if device_type == 'Airjet':
+        logging.info(f"Device type: {device_type}")
+    elif device_type == 'Airjet_V01':
+        logging.info(f"Device type: {device_type}")
+    else:
+        info.error(f"Device type {device_type} unknown")
+        sys.exit("Unable to continue. Exiting.")
 
 if controlling:
     logging.info("applying controls")
-    api.set_controls(token, cfg.did, pump, heat, temp, bubbles, delay, timer)
+    if our_device['type'] == 'Airjet':
+        api.set_Airjet_controls(token, cfg.did, pump, heat, temp, bubbles, delay, timer)
+    elif our_device['type'] == 'Airjet_V01':
+        api.set_Airjet_V01_controls(token, cfg.did, pump, heat, temp, bubbles, delay, timer)
+
 else:
     logging.info("Getting device info")
     info = api.get_device_info(token, cfg.did)
-    logging.info(f"Device Info: {info}")
+    logging.debug(f"Device Info: {info}")
     attrs = info['attr']
-    logging.debug(attrs)
-    print(f"Temperature is {attrs['temp_now']}°{'C' if attrs['temp_set_unit'] == '摄氏' else 'F'}")
-    print(f"Filter pump is {'ON' if attrs['filter_power'] else 'OFF'}")
-    print(f"Heater is {'ON' if attrs['heat_power'] else 'OFF'}")
+    # check protocol version
+    if device_type == 'Airjet':
+        # older version
+        temp_now = attrs['temp_now']
+        if ['temp_set_unit'] == '摄氏':
+            temp_unit = '°C'
+        else:
+            temp_unit = '°F'
+        if attrs['filter_power']:
+            pump_state = 'ON'
+        else:
+            pump_state = 'OFF'
+        if attrs['heat_power']:
+            heat_state = 'ON'
+        else:
+            heat_state = 'OFF'
+    elif device_type == 'Airjet_V01':
+        # newer version
+        temp_now = attrs['Tnow']
+        if attrs['Tunit'] == 1:
+            temp_unit = '°C'
+        else:
+            temp_unit = '°F'
+        if attrs['filter']:
+            pump_state = 'ON'
+        else:
+            pump_state = 'OFF'
+        if attrs['heat']:
+            heat_state = 'ON'
+        else:
+            heat_state = 'OFF'
+
+        print(f"Temperature is {temp_now}{temp_unit}")
+    print(f"Filter pump is {pump_state}")
+    print(f"Heater is {heat_state}")
 
 logging.info("Saving configuration")
 cfg.token = dict(token)

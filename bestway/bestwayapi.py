@@ -22,6 +22,7 @@ HEADERS = {
 GIZWITS_USER_TOKEN = "X-Gizwits-User-token"
 TIMEOUT = 10
 
+# 'Airjet' JSON tags for device control:
 PUMP_CTRL = "filter_power"    # filter pump: 1=on, 0=off
 HEAT_CTRL = "heat_power"      # heater power: 1=on, 0=off
 TEMP_CTRL = "temp_set"        # temperature setpoint (in current scale)
@@ -29,6 +30,18 @@ BUBL_CTRL = "wave_power"      # bubbles: 1=on, 0=off
 LOCK_CTRL = "locked"          # control panel locked: 1=locked, 0=unlocked
 DELY_CTRL = "heat_appm_min"   # delay before heating in minutes
 TIME_CTRL = "heat_timer_min"  # heating duration in minutes
+# 'Airjet_V01' JSON tags for device control:
+PUMP_CTRL_V01 = "filter"          # filter pump: 2=on, 0=off
+PUMP_ON_V01   = 2
+HEAT_CTRL_V01 = "heat"            # heater power: 3=on, 0=off
+HEAT_ON_V01   = 3
+TEMP_CTRL_V01 = "Tset"            # temperature setpoint (in current scale)
+BUBL_CTRL_V01 = "wave"            # bubbles: 1=on, 0=off
+LOCK_CTRL_V01 = "locked"          # ?? control panel locked: 1=locked, 0=unlocked
+DELY_CTRL_V01 = "word0"   # delay before heating in minutes
+TIME_CTRL_V01 = "word1"  # heating duration in minutes
+TIMER_CTRL_V01  = "word2"   # ?? timer in operation
+TIMER_ON_V01  = 88   # ?? timer in operation
 
 # =====================================
 # Exceptions
@@ -86,9 +99,9 @@ class BestwayAPI:
         logging.info(f"getting info for device {device_id}")
         return self._get(f"/app/devdata/{device_id}/latest", self._get_headers(token))
 
-    def set_controls(self, token, device_id, pump=None, heat=None, temp=None, bubbles=None, delay=None, timer=None):
+    def set_Airjet_controls(self, token, device_id, pump=None, heat=None, temp=None, bubbles=None, delay=None, timer=None):
         """
-        control Hot Tub:
+        control Hot Tub ('Airjet' devices):
         token = security token [see get_user_token()]
         device_id = id of Hot Tub [see get_devices()]
         pump = filter pump: True = on, False = off
@@ -122,6 +135,51 @@ class BestwayAPI:
             logging.info(f"schedule heating in {delay} minutes for {timer} minutes")
             self._add_control(controls, DELY_CTRL, delay)
             self._add_control(controls, TIME_CTRL, timer)
+        elif delay is not None or timer is not None:
+            raise InvalidArgument("Must specify delay and timer together")
+        logging.debug(controls)
+
+        logging.info("sending")
+        self._post(f"/app/control/{device_id}", self._get_headers(token), controls)
+
+    def set_Airjet_V01_controls(self, token, device_id, pump=None, heat=None, temp=None, bubbles=None, delay=None, timer=None):
+        """
+        control Hot Tub ('Airjet_V01' devices):
+        token = security token [see get_user_token()]
+        device_id = id of Hot Tub [see get_devices()]
+        pump = filter pump: True = on, False = off
+        heat = heater: True = on, False = off
+        bubbles: True = on, False = off
+        temp = target temperature (in current scale)
+        delay = timer before heating (in minutes)
+        timer = time to heat for (in minutes)
+
+        specify delay and timer together
+        """
+        if self.is_token_expired(token):
+            raise InvalidToken()
+
+        controls = self._empty_control()
+
+        logging.info("Setting controls")
+        if pump is not None:
+            logging.info(f"pump: {'ON' if pump else 'OFF'}")
+            self._add_control(controls, PUMP_CTRL_V01, PUMP_ON_V01 if pump else 0)
+        if heat is not None:
+            logging.info(f"heat: {'ON' if heat else 'OFF'}")
+            self._add_control(controls, HEAT_CTRL_V01, HEAT_ON_V01 if heat else 0)
+        if temp is not None:
+            logging.info(f"set temperature to {temp}")
+            self._add_control(controls, TEMP_CTRL_V01, temp)
+        if bubbles is not None:
+            # TODO: check values for high/low power
+            logging.info(f"turn bubbles {'ON' if bubbles else 'OFF'}")
+            self._add_control(controls, BUBL_CTRL_V01, 1 if bubbles else 0)
+        if delay is not None and timer is not None:
+            logging.info(f"schedule heating in {delay} minutes for {timer} minutes")
+            self._add_control(controls, DELY_CTRL_V01, delay)
+            self._add_control(controls, TIME_CTRL_V01, timer)
+            self._add_control(controls, TIMER_CTRL_V01, TIMER_ON_V01)
         elif delay is not None or timer is not None:
             raise InvalidArgument("Must specify delay and timer together")
         logging.debug(controls)
