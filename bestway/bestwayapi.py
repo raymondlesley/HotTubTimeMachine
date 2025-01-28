@@ -56,7 +56,8 @@ class BestwayAPI:
         body = {"username": username, "password": password, "lang": "en"}
         logging.info("logging in")
         r = self._post("/app/login", dict(HEADERS), body)
-        return BestwayUserToken.from_values(r.uid, r.token, r.expire_at)
+        logging.info(f"login payload: {r}")
+        return BestwayUserToken.from_values(r["uid"], r["token"], r["expire_at"])
 
     def check_login(self, token, username, password) -> BestwayUserToken:
         """check and refresh token, logging in with username and password if required"""

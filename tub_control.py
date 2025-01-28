@@ -79,12 +79,17 @@ if args.schedule:
     timer = args.schedule[1]
     controlling = True
 
+logging.info("checking devices")
+devices = api.get_devices(token)
+logging.info(f"Devices: {devices}")
+
 if controlling:
     logging.info("applying controls")
     api.set_controls(token, cfg.did, pump, heat, temp, bubbles, delay, timer)
 else:
     logging.info("Getting device info")
     info = api.get_device_info(token, cfg.did)
+    logging.info(f"Device Info: {info}")
     attrs = info['attr']
     logging.debug(attrs)
     print(f"Temperature is {attrs['temp_now']}°{'C' if attrs['temp_set_unit'] == '摄氏' else 'F'}")
