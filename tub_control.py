@@ -95,7 +95,7 @@ else:
     device_status = device.get_status(token)
     temp_now = device_status.get_temp()
     temp_unit = device_status.get_temp_unit()
-    pump_state = device_status.get_pump_status()
+    pump_state = device_status.get_pump_is_on()
     heat_state = device_status.get_heat_is_on()
     print(f"Temperature is {temp_now}{temp_unit}")
     print(f"Filter pump is {'ON' if pump_state else 'OFF'}")

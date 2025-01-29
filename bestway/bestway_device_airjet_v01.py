@@ -6,6 +6,7 @@ Bestway Device Airjet_V01 - implementation of JSON protocol for
 import bestway.bestway_device
 import bestway.bestway_exceptions as bestway_exceptions
 
+# -- ----------------------------------------------------------------------- --
 # 'Airjet' JSON tags for device info:
 TEMP_NOW = 'Tnow'
 TEMP_UNIT = 'Tunit'
@@ -19,24 +20,17 @@ HEAT_STATE_ON = 3
 HEAT_STATE_OFF = 0
 TIMER_DURN = 'word1'
 TIMER_DELAY = 'word0'
+TIMER_STATE = 'word2'
+TIMER_ON = 88
 
-# 'Airjet_V01' JSON tags for device control:
-PUMP_CTRL_V01 = "filter"          # filter pump: 2=on, 0=off
-PUMP_ON_V01   = 2
-HEAT_CTRL_V01 = "heat"            # heater power: 3=on, 0=off
-HEAT_ON_V01   = 3
-TEMP_CTRL_V01 = "Tset"            # temperature setpoint (in current scale)
-BUBL_CTRL_V01 = "wave"            # bubbles: 1=on, 0=off
-LOCK_CTRL_V01 = "locked"          # ?? control panel locked: 1=locked, 0=unlocked
-DELY_CTRL_V01 = "word0"   # delay before heating in minutes
-TIME_CTRL_V01 = "word1"  # heating duration in minutes
-TIMER_CTRL_V01  = "word2"   # ?? timer in operation
-TIMER_ON_V01  = 88   # ?? timer in operation
+# -- ----------------------------------------------------------------------- --
 
 class BestwayDeviceAirjet_V01(bestway.bestway_device.BestwayDevice):
 
     def get_status(self, token):
         return BestwayStatusAirjet_V01(self._get_raw_status(token))
+
+# -- ----------------------------------------------------------------------- --
 
 class BestwayStatusAirjet_V01(bestway.bestway_device.BestwayStatus):
 
@@ -97,3 +91,5 @@ class BestwayStatusAirjet_V01(bestway.bestway_device.BestwayStatus):
             return raw_status[TIMER_DELAY]
         else:
             raise bestway_exceptions.UnsupportedDevice()
+
+# -- ----------------------------------------------------------------------- --

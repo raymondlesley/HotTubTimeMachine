@@ -15,7 +15,10 @@ import bestway.bestway_device as bestway_device
 from bestway.bestway_device_airjet import BestwayDeviceAirjet
 from bestway.bestway_device_airjet_v01 import BestwayDeviceAirjet_V01
 
-# =====================================
+# TODO: create BestwayControl classes
+#       ... to replace set_xxxxxx_controls methods
+
+# -- ----------------------------------------------------------------------- --
 # CONSTANTS
 
 ENCODING = "utf=8"
@@ -47,7 +50,7 @@ TIME_CTRL_V01 = "word1"  # heating duration in minutes
 TIMER_CTRL_V01  = "word2"   # ?? timer in operation
 TIMER_ON_V01  = 88   # ?? timer in operation
 
-# =====================================
+# -- ----------------------------------------------------------------------- --
 
 class BestwayAPI:
     """Abstraction of the Bestway web API"""
@@ -85,7 +88,7 @@ class BestwayAPI:
         else:
             return []
 
-    def _get_device_info(self, token, device_id):
+    def get_device_raw_info(self, token, device_id):
         """retrieve current device status"""
         if self.is_token_expired(token):
             raise bestway_exceptions.InvalidToken()
@@ -231,3 +234,5 @@ class BestwayAPI:
         content = resp.read()
         result = json.loads(content)
         return result
+
+# -- ----------------------------------------------------------------------- --

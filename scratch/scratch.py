@@ -58,7 +58,7 @@ for device in results:
     logging.info(f"{device['did']}: {devices[device['did']]}")
 
 logging.info("Getting device info")
-info = api._get_device_info(token, cfg.did)
+info = api.get_device_raw_info(token, cfg.did)
 logging.info(info)
 logging.info(f"{devices[cfg.did]['name']}:"
              f" {info['attr']['temp_now']}'C"

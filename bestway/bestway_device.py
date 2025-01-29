@@ -10,14 +10,15 @@ devised by reverse-engineering the JSON data exchanged
 import logging
 
 import bestway.bestwayapi
+import bestway.bestway_exceptions as bestway_exceptions
 
-# =====================================
+# -- ----------------------------------------------------------------------- --
 # constants
 AIRJET = 'Airjet'
 AIRJET_V01 = 'Airjet_V01'
 
 
-# =====================================
+# -- ----------------------------------------------------------------------- --
 
 class BestwayDevice:
     """ Abstract Bestway Device base class"""
@@ -31,11 +32,11 @@ class BestwayDevice:
         if 'product_name' in raw_device_data:
             self.__type = raw_device_data['product_name']
         else:
-            raise UnsupportedDevice()
+            raise bestway_exceptions.UnsupportedDevice()
         if 'dev_alias' in raw_device_data:
             self.__name = raw_device_data['dev_alias']
         else:
-            raise UnsupportedDevice()
+            raise bestway_exceptions.UnsupportedDevice()
 
     def __repr__(self):
         return f"BestwayDevice: {self.__name} ({self.__type})"
@@ -52,7 +53,7 @@ class BestwayDevice:
         return self.__type
 
     def _get_raw_status(self, token):
-        raw_device_info = self._get_api()._get_device_info(token, self._get_device_id())
+        raw_device_info = self._get_api().get_device_raw_info(token, self._get_device_id())
         if 'attr' in raw_device_info:
             return raw_device_info['attr']
         else:
@@ -63,6 +64,8 @@ class BestwayDevice:
     def get_status(self, token):
         raise NotImplemented()
 
+
+# -- ----------------------------------------------------------------------- --
 
 class BestwayStatus:
     """ Abstract Bestway Device Status base class"""
@@ -99,3 +102,5 @@ class BestwayStatus:
 
     def get_timer_delay(self):
         raise NotImplemented()
+
+# -- ----------------------------------------------------------------------- --

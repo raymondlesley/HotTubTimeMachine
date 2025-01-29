@@ -6,6 +6,7 @@ Bestway Device Airjet - implementation of JSON protocol for
 import bestway.bestway_device
 import bestway.bestway_exceptions as bestway_exceptions
 
+# -- ----------------------------------------------------------------------- --
 # 'Airjet' JSON tags for device info:
 TEMP_NOW = 'temp_now'
 TEMP_UNIT = 'temp_set_unit'
@@ -20,20 +21,15 @@ HEAT_STATE_OFF = 0
 TIMER_DURN = 'heat_timer_min'
 TIMER_DELAY = 'heat_appm_min'
 
-# 'Airjet' JSON tags for device control:
-PUMP_CTRL = "filter_power"    # filter pump: 1=on, 0=off
-HEAT_CTRL = "heat_power"      # heater power: 1=on, 0=off
-TEMP_CTRL = "temp_set"        # temperature setpoint (in current scale)
-BUBL_CTRL = "wave_power"      # bubbles: 1=on, 0=off
-LOCK_CTRL = "locked"          # control panel locked: 1=locked, 0=unlocked
-DELY_CTRL = "heat_appm_min"   # delay before heating in minutes
-TIME_CTRL = "heat_timer_min"  # heating duration in minutes
+# -- ----------------------------------------------------------------------- --
 
 class BestwayDeviceAirjet(bestway.bestway_device.BestwayDevice):
 
     def get_status(self, token):
         return BestwayStatusAirjet(self._get_raw_status(token))
 
+
+# -- ----------------------------------------------------------------------- --
 
 class BestwayStatusAirjet(bestway.bestway_device.BestwayStatus):
     def get_temp(self):
@@ -43,7 +39,7 @@ class BestwayStatusAirjet(bestway.bestway_device.BestwayStatus):
         else:
             raise bestway_exceptions.UnsupportedDevice()
 
-    def get_temp_unit(self, raw_status):
+    def get_temp_unit(self):
         raw_status = self._get_device_data()
         if TEMP_UNIT in raw_status:
             if raw_status[TEMP_UNIT] == TEMP_UNIT_C:
@@ -60,7 +56,7 @@ class BestwayStatusAirjet(bestway.bestway_device.BestwayStatus):
         else:
             raise bestway_exceptions.UnsupportedDevice()
 
-    def get_pump_is_on(self, raw_status):
+    def get_pump_is_on(self):
         raw_status = self._get_device_data()
         if PUMP_STATE in raw_status:
             if raw_status[PUMP_STATE] == PUMP_STATE_ON:
@@ -70,7 +66,7 @@ class BestwayStatusAirjet(bestway.bestway_device.BestwayStatus):
         else:
             raise bestway_exceptions.UnsupportedDevice()
 
-    def get_heat_is_on(self, raw_status):
+    def get_heat_is_on(self):
         raw_status = self._get_device_data()
         if HEAT_STATE in raw_status:
             if raw_status[HEAT_STATE] == HEAT_STATE_ON:
@@ -93,3 +89,5 @@ class BestwayStatusAirjet(bestway.bestway_device.BestwayStatus):
             return raw_status[TIMER_DELAY]
         else:
             raise bestway_exceptions.UnsupportedDevice()
+
+# -- ----------------------------------------------------------------------- --
