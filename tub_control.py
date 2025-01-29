@@ -83,8 +83,6 @@ if args.schedule:
 
 device = api.get_device(token, cfg.did)
 logging.debug(f"Got device: {device}")
-raw_device_status = device.get_raw_status(token)
-logging.info(f"Temp now: {device.get_temp(raw_device_status)}")
 
 if controlling:
     logging.info("applying controls")
@@ -94,10 +92,11 @@ if controlling:
         api.set_Airjet_V01_controls(token, cfg.did, pump, heat, temp, bubbles, delay, timer)
 
 else:
-    temp_now = device.get_temp(raw_device_status)
-    temp_unit = device.get_temp_unit(raw_device_status)
-    pump_state = device.get_pump_status(raw_device_status)
-    heat_state = device.get_heat_is_on(raw_device_status)
+    device_status = device.get_status(token)
+    temp_now = device_status.get_temp()
+    temp_unit = device_status.get_temp_unit()
+    pump_state = device_status.get_pump_status()
+    heat_state = device_status.get_heat_is_on()
     print(f"Temperature is {temp_now}{temp_unit}")
     print(f"Filter pump is {'ON' if pump_state else 'OFF'}")
     print(f"Heater is {'ON' if heat_state else 'OFF'}")

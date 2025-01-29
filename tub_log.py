@@ -76,15 +76,24 @@ token = BestwayUserToken(cfg.token)
 api = BestwayAPI(cfg.gizwits_url)
 token = api.check_login(token, cfg.username, cfg.password)
 
+"""
 logging.info("Getting device info")
 info = api._get_device_info(token, cfg.did)
+"""
+device = api.get_device(token, cfg.did)
+logging.info(f"Got device: {device}")
+
+device_status = device.get_status(token)
+temp_now = device_status.get_temp()
+pump_state = device_status.get_pump_is_on()
+heat_state = device_status.get_heat_is_on()
 
 logging.info("Logging")
 # ['TIME', 'TEMP_C', 'FILTER', 'HEAT']
 writer.writerow([datetime.datetime.now().isoformat(),
-                 info['attr']['temp_now'],
-                 info['attr']['filter_power'],
-                 info['attr']['heat_power']
+                 temp_now,
+                 'ON' if pump_state else 'OFF',
+                 'ON' if heat_state else 'OFF'
                 ])
 
 logging.info("Saving configuration")

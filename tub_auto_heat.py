@@ -102,49 +102,18 @@ logging.debug(minutes)
 minutes_to_go = minutes + 24 * 60 - minutes_now
 logging.info(f"Economy 7 ends in {minutes_to_go} minutes")
 
-logging.info("Getting device info")
-info = api._get_device_info(token, cfg.did)
-attrs = info['attr']
-logging.debug(attrs)
+device = api.get_device(token, cfg.did)
+logging.info(f"Got device: {device}")
 
-logging.info("checking devices")
-devices = api._get_devices(token)
-logging.debug(f"Devices: {devices}")
-
-device_info = {}
-logging.info("Found devices:")
-for device in devices:
-    logging.info(f"  Device: {device['dev_alias']} ({device['product_name']} = {device['did']})")
-    device_info[device['did']] = {'name': device['dev_alias'], 'type': device['product_name']}
-
-# check configured device exists
-if not cfg.did in device_info.keys():
-    logging.error(f"No device with did {cfg.did} associated with account")
-    sys.exit("Unable to continue. Exiting.")
-else:
-    our_device = device_info[cfg.did]
-    device_type = our_device['type']
-    if device_type == 'Airjet':
-        logging.info(f"Device type: {device_type}")
-        TEMP_NOW = 'temp_now'
-        TARGET_TEMP = 'temp_set'
-        TIMER_DURN = 'heat_timer_min'
-        TIMER_DELAY = 'heat_appm_min'
-    elif device_type == 'Airjet_V01':
-        logging.info(f"Device type: {device_type}")
-        TEMP_NOW = 'Tnow'
-        TARGET_TEMP = 'Tset'
-        TIMER_DURN = 'word1'
-        TIMER_DELAY = 'word0'
-    else:
-        info.error(f"Device type {device_type} unknown")
-        sys.exit("Unable to continue. Exiting.")
+device_status = device.get_status(token)
+temp_now = device_status.get_temp()
+temp_target = device_status.get_target_temp()
 
 if controlling:
     logging.info("calculating start and duration")
     time_to_heat = 0
-    tracked_temp = float(attrs[TEMP_NOW])
-    target_temp = float(attrs[TARGET_TEMP])
+    tracked_temp = float(temp_now)
+    target_temp = float(temp_target)
     if args.temp: target_temp = float(args.temp)
     logging.debug(f"Temp now = {tracked_temp}")
     start_time = 0
@@ -173,10 +142,11 @@ if controlling:
     elif device_type == 'Airjet_V01':
         api.set_Airjet_V01_controls(token, cfg.did, pump, None, target_temp, None, start_time, time_to_heat)
 else:
-    # TODO: decide how to indicate "report-only" operation
-    print(f"Target temperature {attrs[TARGET_TEMP]}")
-    print(f"Temperature now {attrs[TEMP_NOW]}")
-    print(f"Programmed to heat for {attrs[TIMER_DURN]} minutes, starting in {attrs[TIMER_DELAY]} minutes")
+    timer_durn = device_status.get_timer_duration()
+    timer_delay = device_status.get_timer_delay()
+    print(f"Target temperature {temp_target}")
+    print(f"Temperature now {temp_now}")
+    print(f"Programmed to heat for {timer_durn} minutes, starting in {timer_delay} minutes")
 
 logging.info("Saving configuration")
 cfg.toFile(args.cfgfile)

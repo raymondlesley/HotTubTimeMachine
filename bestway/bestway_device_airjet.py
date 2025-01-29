@@ -10,12 +10,15 @@ import bestway.bestway_exceptions as bestway_exceptions
 TEMP_NOW = 'temp_now'
 TEMP_UNIT = 'temp_set_unit'
 TEMP_UNIT_C = '摄氏'
+TEMP_TARGET = 'temp_set'
 PUMP_STATE = 'filter_power'
 PUMP_STATE_ON = 1
 PUMP_STATE_OFF = 0
 HEAT_STATE = 'heat_power'
 HEAT_STATE_ON = 1
 HEAT_STATE_OFF = 0
+TIMER_DURN = 'heat_timer_min'
+TIMER_DELAY = 'heat_appm_min'
 
 # 'Airjet' JSON tags for device control:
 PUMP_CTRL = "filter_power"    # filter pump: 1=on, 0=off
@@ -28,13 +31,20 @@ TIME_CTRL = "heat_timer_min"  # heating duration in minutes
 
 class BestwayDeviceAirjet(bestway.bestway_device.BestwayDevice):
 
-    def get_temp(self, raw_status):
+    def get_status(self, token):
+        return BestwayStatusAirjet(self._get_raw_status(token))
+
+
+class BestwayStatusAirjet(bestway.bestway_device.BestwayStatus):
+    def get_temp(self):
+        raw_status = self._get_device_data()
         if TEMP_NOW in raw_status:
             return raw_status[TEMP_NOW]
         else:
             raise bestway_exceptions.UnsupportedDevice()
 
     def get_temp_unit(self, raw_status):
+        raw_status = self._get_device_data()
         if TEMP_UNIT in raw_status:
             if raw_status[TEMP_UNIT] == TEMP_UNIT_C:
                 return '°C'
@@ -43,7 +53,15 @@ class BestwayDeviceAirjet(bestway.bestway_device.BestwayDevice):
         else:
             raise bestway_exceptions.UnsupportedDevice()
 
-    def get_pump_status(self, raw_status):
+    def get_target_temp(self):
+        raw_status = self._get_device_data()
+        if TEMP_TARGET in raw_status:
+            return raw_status[TEMP_TARGET]
+        else:
+            raise bestway_exceptions.UnsupportedDevice()
+
+    def get_pump_is_on(self, raw_status):
+        raw_status = self._get_device_data()
         if PUMP_STATE in raw_status:
             if raw_status[PUMP_STATE] == PUMP_STATE_ON:
                 return True
@@ -53,10 +71,25 @@ class BestwayDeviceAirjet(bestway.bestway_device.BestwayDevice):
             raise bestway_exceptions.UnsupportedDevice()
 
     def get_heat_is_on(self, raw_status):
+        raw_status = self._get_device_data()
         if HEAT_STATE in raw_status:
             if raw_status[HEAT_STATE] == HEAT_STATE_ON:
                 return True
             else:
                 return False
+        else:
+            raise bestway_exceptions.UnsupportedDevice()
+
+    def get_timer_duration(self):
+        raw_status = self._get_device_data()
+        if TIMER_DURN in raw_status:
+            return raw_status[TIMER_DURN]
+        else:
+            raise bestway_exceptions.UnsupportedDevice()
+
+    def get_timer_delay(self):
+        raw_status = self._get_device_data()
+        if TIMER_DELAY in raw_status:
+            return raw_status[TIMER_DELAY]
         else:
             raise bestway_exceptions.UnsupportedDevice()

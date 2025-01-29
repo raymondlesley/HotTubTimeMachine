@@ -51,7 +51,7 @@ class BestwayDevice:
     def get_device_type(self):
         return self.__type
 
-    def get_raw_status(self, token):
+    def _get_raw_status(self, token):
         raw_device_info = self._get_api()._get_device_info(token, self._get_device_id())
         if 'attr' in raw_device_info:
             return raw_device_info['attr']
@@ -59,14 +59,43 @@ class BestwayDevice:
             raise bestway_exceptions.UnsupportedDevice()
 
     # override methods
-    def get_temp(self, raw_status):
+
+    def get_status(self, token):
         raise NotImplemented()
 
-    def get_temp_unit(self, raw_status):
+
+class BestwayStatus:
+    """ Abstract Bestway Device Status base class"""
+
+    # constructor
+    def __init__(self, raw_device_data):
+        logging.debug(f"Constructing BestwayStatus({raw_device_data})")
+        self.__device_data = raw_device_data
+
+    def __repr__(self):
+        return f"BestwayStatus: {self.__device_data})"
+
+    def _get_device_data(self):
+        return self.__device_data
+
+    # override methods
+    def get_temp(self):
         raise NotImplemented()
 
-    def get_pump_is_on(self, raw_status):
+    def get_temp_unit(self):
         raise NotImplemented()
 
-    def get_heat_is_on(self, raw_status):
+    def get_target_temp(self):
+        raise NotImplemented()
+
+    def get_pump_is_on(self):
+        raise NotImplemented()
+
+    def get_heat_is_on(self):
+        raise NotImplemented()
+
+    def get_timer_duration(self):
+        raise NotImplemented()
+
+    def get_timer_delay(self):
         raise NotImplemented()
