@@ -89,8 +89,9 @@ pump_state = device_status.get_pump_is_on()
 heat_state = device_status.get_heat_is_on()
 
 logging.info("Logging")
+logging.debug(datetime.datetime.now().isoformat(timespec='seconds'))
 # ['TIME', 'TEMP_C', 'FILTER', 'HEAT']
-writer.writerow([datetime.datetime.now().isoformat(),
+writer.writerow([datetime.datetime.now().isoformat(timespec='seconds'),
                  temp_now,
                  'ON' if pump_state else 'OFF',
                  'ON' if heat_state else 'OFF'
