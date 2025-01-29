@@ -10,6 +10,10 @@ import json
 import logging
 
 from bestway.bestway_user_token import BestwayUserToken
+import bestway.bestway_exceptions as bestway_exceptions
+import bestway.bestway_device as bestway_device
+from bestway.bestway_device_airjet import BestwayDeviceAirjet
+from bestway.bestway_device_airjet_v01 import BestwayDeviceAirjet_V01
 
 # =====================================
 # CONSTANTS
@@ -44,17 +48,6 @@ TIMER_CTRL_V01  = "word2"   # ?? timer in operation
 TIMER_ON_V01  = 88   # ?? timer in operation
 
 # =====================================
-# Exceptions
-
-class InvalidToken(Exception):
-    def __init__(self):
-        super().__init__('Token expired')
-
-class InvalidArgument(Exception):
-    def __init__(self, message):
-        super().__init__(message)
-
-# =====================================
 
 class BestwayAPI:
     """Abstraction of the Bestway web API"""
@@ -81,10 +74,10 @@ class BestwayAPI:
             token = self.get_user_token(username, password)
         return token
 
-    def get_devices(self, token):
+    def _get_devices(self, token):
         """ retrieve list of configured devices"""
         if self.is_token_expired(token):
-            raise InvalidToken()
+            raise bestway_exceptions.InvalidToken()
         devices = self._get("/app/bindings", self._get_headers(token))
         # remove unnecessary layer
         if devices['devices']:
@@ -92,12 +85,37 @@ class BestwayAPI:
         else:
             return []
 
-    def get_device_info(self, token, device_id):
+    def _get_device_info(self, token, device_id):
         """retrieve current device status"""
         if self.is_token_expired(token):
-            raise InvalidToken()
+            raise bestway_exceptions.InvalidToken()
         logging.info(f"getting info for device {device_id}")
         return self._get(f"/app/devdata/{device_id}/latest", self._get_headers(token))
+
+    def _get_device_raw(self, token, device_id):
+        raw_devices = self._get_devices(token)
+        for device in raw_devices:
+            if 'did' in device:
+                if device['did'] == device_id:
+                    return device
+            else:
+                raise bestway_exceptions.UnsupportedDevice()
+
+    def get_device(self, token, device_id):
+        raw_device = self._get_device_raw(token, device_id)
+        if raw_device:
+            if 'product_name' in raw_device:
+                type = raw_device['product_name']
+            else:
+                raise bestway_exceptions.UnsupportedDevice()
+            if type == bestway_device.AIRJET:
+                return BestwayDeviceAirjet(self, device_id, raw_device)
+            elif type == bestway_device.AIRJET_V01:
+                return BestwayDeviceAirjet_V01(self, device_id, raw_device)
+            else:
+                raise bestway_exceptions.UnsupportedDevice()
+        else:
+            raise bestway_exceptions.UnknownDevice(device_id)
 
     def set_Airjet_controls(self, token, device_id, pump=None, heat=None, temp=None, bubbles=None, delay=None, timer=None):
         """
@@ -114,7 +132,7 @@ class BestwayAPI:
         specify delay and timer together
         """
         if self.is_token_expired(token):
-            raise InvalidToken()
+            raise bestway_exceptions.InvalidToken()
 
         controls = self._empty_control()
 
@@ -136,7 +154,7 @@ class BestwayAPI:
             self._add_control(controls, DELY_CTRL, delay)
             self._add_control(controls, TIME_CTRL, timer)
         elif delay is not None or timer is not None:
-            raise InvalidArgument("Must specify delay and timer together")
+            raise bestway_exceptions.InvalidArgument("Must specify delay and timer together")
         logging.debug(controls)
 
         logging.info("sending")
@@ -157,7 +175,7 @@ class BestwayAPI:
         specify delay and timer together
         """
         if self.is_token_expired(token):
-            raise InvalidToken()
+            raise bestway_exceptions.InvalidToken()
 
         controls = self._empty_control()
 
@@ -181,7 +199,7 @@ class BestwayAPI:
             self._add_control(controls, TIME_CTRL_V01, timer)
             self._add_control(controls, TIMER_CTRL_V01, TIMER_ON_V01)
         elif delay is not None or timer is not None:
-            raise InvalidArgument("Must specify delay and timer together")
+            raise bestway_exceptions.InvalidArgument("Must specify delay and timer together")
         logging.debug(controls)
 
         logging.info("sending")

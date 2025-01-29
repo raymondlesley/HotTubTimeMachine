@@ -103,12 +103,12 @@ minutes_to_go = minutes + 24 * 60 - minutes_now
 logging.info(f"Economy 7 ends in {minutes_to_go} minutes")
 
 logging.info("Getting device info")
-info = api.get_device_info(token, cfg.did)
+info = api._get_device_info(token, cfg.did)
 attrs = info['attr']
 logging.debug(attrs)
 
 logging.info("checking devices")
-devices = api.get_devices(token)
+devices = api._get_devices(token)
 logging.debug(f"Devices: {devices}")
 
 device_info = {}

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # log_tub - log Hot Tub current temperature, status to file
 #
 
@@ -77,7 +77,7 @@ api = BestwayAPI(cfg.gizwits_url)
 token = api.check_login(token, cfg.username, cfg.password)
 
 logging.info("Getting device info")
-info = api.get_device_info(token, cfg.did)
+info = api._get_device_info(token, cfg.did)
 
 logging.info("Logging")
 # ['TIME', 'TEMP_C', 'FILTER', 'HEAT']
