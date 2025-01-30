@@ -137,6 +137,7 @@ if controlling:
         time_to_heat= None
         logging.info(f"temperature ({float(attrs['temp_now'])}) projected to end at {tracked_temp:.1f} - over setpoint {target_temp}")
     logging.info("Sending to Hot Tub")
+    device_type = device.get_device_type()
     if device_type == 'Airjet':
         api.set_Airjet_controls(token, cfg.did, pump, None, target_temp, None, start_time, time_to_heat)
     elif device_type == 'Airjet_V01':
