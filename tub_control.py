@@ -86,9 +86,10 @@ logging.debug(f"Got device: {device}")
 
 if controlling:
     logging.info("applying controls")
-    if our_device['type'] == 'Airjet':
+    our_device = device.get_device_type()
+    if our_device == 'Airjet':
         api.set_Airjet_controls(token, cfg.did, pump, heat, temp, bubbles, delay, timer)
-    elif our_device['type'] == 'Airjet_V01':
+    elif our_device == 'Airjet_V01':
         api.set_Airjet_V01_controls(token, cfg.did, pump, heat, temp, bubbles, delay, timer)
 
 else:

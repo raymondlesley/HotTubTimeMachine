@@ -12,6 +12,8 @@ TEMP_NOW = 'Tnow'
 TEMP_UNIT = 'Tunit'
 TEMP_UNIT_C = 1
 TEMP_TARGET = 'Tset'
+TEMP_STATE = 'word3'
+TEMP_REACHED = 1
 PUMP_STATE = 'filter'
 PUMP_STATE_ON = 2
 PUMP_STATE_OFF = 0
@@ -21,7 +23,11 @@ HEAT_STATE_OFF = 0
 TIMER_DURN = 'word1'
 TIMER_DELAY = 'word0'
 TIMER_STATE = 'word2'
-TIMER_ON = 88
+TIMER_ON = 88 # ?? TODO: check this value!
+LOCK_STATE = 'bit6'  # according to https://github.com/cdpuk/ha-bestway/issues/41
+LOCKED = 1  # TODO: check
+EARTH_STATE = 'bit5'  # according to https://github.com/cdpuk/ha-bestway/issues/41
+EARTHED = 1 # TODO: check
 
 # -- ----------------------------------------------------------------------- --
 
