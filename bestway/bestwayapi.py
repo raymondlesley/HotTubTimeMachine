@@ -180,32 +180,58 @@ class BestwayAPI:
         if self.is_token_expired(token):
             raise bestway_exceptions.InvalidToken()
 
+        # For the Airjet_V01, trial and error suggests that the timer and delay
+        # need to be send separately, with a delay between.
+        # Here, we will send any "switch" options (pump, etc.,) first,
+        # then - after a delay - send the timer and delay values
+
         controls = self._empty_control()
+        switches_set = False
 
         logging.info("Setting controls")
         if pump is not None:
             logging.info(f"pump: {'ON' if pump else 'OFF'}")
             self._add_control(controls, PUMP_CTRL_V01, PUMP_ON_V01 if pump else 0)
+            switches_set = True
         if heat is not None:
             logging.info(f"heat: {'ON' if heat else 'OFF'}")
             self._add_control(controls, HEAT_CTRL_V01, HEAT_ON_V01 if heat else 0)
+            switches_set = True
         if temp is not None:
             logging.info(f"set temperature to {temp}")
             self._add_control(controls, TEMP_CTRL_V01, temp)
+            switches_set = True
         if bubbles is not None:
             # TODO: check values for high/low power
             logging.info(f"turn bubbles {'ON' if bubbles else 'OFF'}")
             self._add_control(controls, BUBL_CTRL_V01, 1 if bubbles else 0)
+            switches_set = True
+
+        # send these, then pause for effect before scheduling heat
+        if switches_set:
+            logging.info("sending switches")
+            logging.debug(controls)
+            self._post(f"/app/control/{device_id}", self._get_headers(token), controls)
+            controls = self._empty_control()
+            time.sleep(8)
+
         if delay is not None and timer is not None:
             logging.info(f"schedule heating in {delay} minutes for {timer} minutes")
-            self._add_control(controls, DELY_CTRL_V01, delay)
+            #self._add_control(controls, DELY_CTRL_V01, delay)
             self._add_control(controls, TIME_CTRL_V01, timer)
-            self._add_control(controls, TIMER_CTRL_V01, TIMER_ON_V01)
+            # self._add_control(controls, TIMER_CTRL_V01, TIMER_ON_V01)
         elif delay is not None or timer is not None:
             raise bestway_exceptions.InvalidArgument("Must specify delay and timer together")
-        logging.debug(controls)
 
-        logging.info("sending")
+        logging.info("sending timer")
+        logging.debug(controls)
+        self._post(f"/app/control/{device_id}", self._get_headers(token), controls)
+        controls = self._empty_control()
+        time.sleep(8)
+
+        self._add_control(controls, DELY_CTRL_V01, delay)
+        logging.info("sending delay")
+        logging.debug(controls)
         self._post(f"/app/control/{device_id}", self._get_headers(token), controls)
 
     def _get_headers(self, user_token):
