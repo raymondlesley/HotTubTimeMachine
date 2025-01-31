@@ -14,6 +14,7 @@ import datetime
 from configuration import Configuration
 from bestway.bestwayapi import BestwayAPI
 from bestway.bestway_user_token import BestwayUserToken
+import bestway.bestway_device as bestway_device
 
 # CONSTANTS
 CFGFILENAME = 'configuration.json'
@@ -85,7 +86,7 @@ else:
         controlling = True
     if args.temp:
         logging.info(f"Setting target temperature to {args.temp}")
-        temp = args.temp
+        temp_target = args.temp
         controlling = True
 
 if args.economyseven:
@@ -107,7 +108,8 @@ logging.info(f"Got device: {device}")
 
 device_status = device.get_status(token)
 temp_now = device_status.get_temp()
-temp_target = device_status.get_target_temp()
+if not args.temp:
+    temp_target = device_status.get_target_temp()
 
 if controlling:
     logging.info("calculating start and duration")
@@ -136,12 +138,14 @@ if controlling:
         start_time = None
         time_to_heat= None
         logging.info(f"temperature ({float(attrs['temp_now'])}) projected to end at {tracked_temp:.1f} - over setpoint {target_temp}")
+
     logging.info("Sending to Hot Tub")
-    device_type = device.get_device_type()
-    if device_type == 'Airjet':
-        api.set_Airjet_controls(token, cfg.did, pump, None, target_temp, None, start_time, time_to_heat)
-    elif device_type == 'Airjet_V01':
-        api.set_Airjet_V01_controls(token, cfg.did, pump, None, target_temp, None, start_time, time_to_heat)
+    commands = bestway_device.BestwayCommand()
+    if pump is not None: commands.set_pump(pump)
+    if args.temp: commands.set_target_temp(int(target_temp))
+    if start_time and time_to_heat: commands.set_schedule(start_time, time_to_heat)
+    device.send_controls(token, commands)
+
 else:
     timer_durn = device_status.get_timer_duration()
     timer_delay = device_status.get_timer_delay()

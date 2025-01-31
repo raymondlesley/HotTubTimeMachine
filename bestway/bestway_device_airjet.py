@@ -18,6 +18,9 @@ PUMP_STATE_OFF = 0
 HEAT_STATE = 'heat_power'
 HEAT_STATE_ON = 1
 HEAT_STATE_OFF = 0
+BUBBLES = "wave_power"
+BUBBLES_ON = 1
+BUBBLES_OFF = 0
 TIMER_DURN = 'heat_timer_min'
 TIMER_DELAY = 'heat_appm_min'
 
@@ -25,13 +28,55 @@ TIMER_DELAY = 'heat_appm_min'
 
 class BestwayDeviceAirjet(bestway.bestway_device.BestwayDevice):
 
+    def __get_empty_control(self):
+        return {'attrs': {}}
+
+    def __add_control(self, controls, control, value):
+        controls["attrs"][control] = value
+        return controls
+
     def get_status(self, token):
         return BestwayStatusAirjet(self._get_raw_status(token))
+
+    def send_controls(self, token, command):
+        pump = command.get_pump()
+        heat = command.get_heat()
+        temp = command.get_temp()
+        bubbles = command.get_bubbles()
+        delay = command.get_delay()
+        duration = command.get_duration()
+
+        controls = self.__get_empty_control()
+
+        logging.info("Setting controls")
+        if pump is not None:
+            logging.info(f"pump: {'ON' if pump else 'OFF'}")
+            self.__add_control(controls, PUMP_STATE, PUMP_STATE_ON if pump else PUMP_STATE_OFF)
+        if heat is not None:
+            logging.info(f"heat: {'ON' if heat else 'OFF'}")
+            self.__add_control(controls, HEAT_STATE, HEAT_STATE_ON if heat else HEAT_STATE_OFF)
+        if temp is not None:
+            logging.info(f"set temperature to {temp}")
+            self.__add_control(controls, TEMP_TARGET, temp)
+        if bubbles is not None:
+            logging.info(f"turn bubbles {'ON' if bubbles else 'OFF'}")
+            self.__add_control(controls, BUBBLES, BUBBLES_ON if bubbles else BUBBLES_OFF)
+        if delay is not None and duration is not None:
+            logging.info(f"schedule heating in {delay} minutes for {timer} minutes")
+            self.__add_control(controls, TIMER_DELAY, delay)
+            self.__add_control(controls, TIMER_DURN, duration)
+        elif delay is not None or timer is not None:
+            raise bestway_exceptions.InvalidArgument("Must specify delay and timer together")
+        logging.debug(f"controls: {controls}")
+
+        logging.info("passing controls to API")
+        self._get_api().send_controls(token, self._get_device_id(), controls)
 
 
 # -- ----------------------------------------------------------------------- --
 
 class BestwayStatusAirjet(bestway.bestway_device.BestwayStatus):
+
     def get_temp(self):
         raw_status = self._get_device_data()
         if TEMP_NOW in raw_status:
@@ -75,6 +120,10 @@ class BestwayStatusAirjet(bestway.bestway_device.BestwayStatus):
                 return False
         else:
             raise bestway_exceptions.UnsupportedDevice()
+
+    def get_bubble_level(self):
+        raw_status = self._get_device_data()
+        raise NotImplemented()
 
     def get_timer_duration(self):
         raw_status = self._get_device_data()

@@ -6,6 +6,7 @@ import argparse
 import logging
 from tarfile import version
 
+import bestway.bestway_device
 import log_config
 import csv
 import os
@@ -86,13 +87,23 @@ logging.debug(f"Got device: {device}")
 
 if controlling:
     logging.info("applying controls")
+    """
     our_device = device.get_device_type()
     if our_device == 'Airjet':
         api.set_Airjet_controls(token, cfg.did, pump, heat, temp, bubbles, delay, timer)
     elif our_device == 'Airjet_V01':
         api.set_Airjet_V01_controls(token, cfg.did, pump, heat, temp, bubbles, delay, timer)
+    """
+    commands = bestway.bestway_device.BestwayCommand()
+    if pump: commands.set_pump(pump)
+    if heat: commands.set_heat(heat)
+    if temp: commands.set_target_temp(temp)
+    if bubbles: commands.set_bubbles(bubbles)
+    if delay and timer: commands.set_schedule(delay, timer)
+    device.send_controls(token, commands)
 
 else:
+    # report status
     device_status = device.get_status(token)
     temp_now = device_status.get_temp()
     temp_unit = device_status.get_temp_unit()

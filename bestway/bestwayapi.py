@@ -120,7 +120,7 @@ class BestwayAPI:
         else:
             raise bestway_exceptions.UnknownDevice(device_id)
 
-    def set_Airjet_controls(self, token, device_id, pump=None, heat=None, temp=None, bubbles=None, delay=None, timer=None):
+    def __DEPRECATED_set_Airjet_controls(self, token, device_id, pump=None, heat=None, temp=None, bubbles=None, delay=None, timer=None):
         """
         control Hot Tub ('Airjet' devices):
         token = security token [see get_user_token()]
@@ -163,7 +163,7 @@ class BestwayAPI:
         logging.info("sending")
         self._post(f"/app/control/{device_id}", self._get_headers(token), controls)
 
-    def set_Airjet_V01_controls(self, token, device_id, pump=None, heat=None, temp=None, bubbles=None, delay=None, timer=None):
+    def __DEPRECATED_set_Airjet_V01_controls(self, token, device_id, pump=None, heat=None, temp=None, bubbles=None, delay=None, timer=None):
         """
         control Hot Tub ('Airjet_V01' devices):
         token = security token [see get_user_token()]
@@ -232,6 +232,11 @@ class BestwayAPI:
         self._add_control(controls, DELY_CTRL_V01, delay)
         logging.info("sending delay")
         logging.debug(controls)
+        self._post(f"/app/control/{device_id}", self._get_headers(token), controls)
+
+    def send_controls(self, token, device_id, controls):
+        logging.debug(f"controls: {controls}")
+        logging.info("sending controls")
         self._post(f"/app/control/{device_id}", self._get_headers(token), controls)
 
     def _get_headers(self, user_token):

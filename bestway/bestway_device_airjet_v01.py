@@ -3,6 +3,9 @@ Bestway Device Airjet_V01 - implementation of JSON protocol for
                         Lay-z-Spa Airjet_V01 models
 """
 
+import logging
+import time
+
 import bestway.bestway_device
 import bestway.bestway_exceptions as bestway_exceptions
 
@@ -33,8 +36,65 @@ EARTHED = 1 # TODO: check
 
 class BestwayDeviceAirjet_V01(bestway.bestway_device.BestwayDevice):
 
+    def __get_empty_control(self):
+        return {'attrs': {}}
+
+    def __add_control(self, controls, control, value):
+        controls["attrs"][control] = value
+        return controls
+
     def get_status(self, token):
         return BestwayStatusAirjet_V01(self._get_raw_status(token))
+
+    def send_controls(self, token, command):
+        pump = command.get_pump()
+        heat = command.get_heat()
+        temp = command.get_target_temp()
+        bubbles = command.get_bubbles()
+        delay = command.get_delay()
+        duration = command.get_duration()
+
+        controls = self.__get_empty_control()
+
+        logging.info("Setting switch controls")
+        switches_set = False
+        if pump is not None:
+            logging.info(f"pump: {'ON' if pump else 'OFF'}")
+            self.__add_control(controls, PUMP_STATE, PUMP_STATE_ON if pump else PUMP_STATE_OFF)
+            switches_set = True
+        if heat is not None:
+            logging.info(f"heat: {'ON' if heat else 'OFF'}")
+            self.__add_control(controls, HEAT_STATE, HEAT_STATE_ON if heat else HEAT_STATE_OFF)
+            switches_set = True
+        if temp is not None:
+            logging.info(f"set temperature to {temp}")
+            self.__add_control(controls, TEMP_TARGET, temp)
+            switches_set = True
+        if bubbles is not None:
+            logging.info(f"turn bubbles {'ON' if bubbles else 'OFF'}")
+            self.__add_control(controls, BUBBLES, BUBBLES_ON if bubbles else BUBBLES_OFF)
+            switches_set = True
+
+        if switches_set:
+            logging.info("passing switch controls to API")
+            self._get_api().send_controls(token, self._get_device_id(), controls)
+            controls = self.__get_empty_control()
+
+        if delay is not None and duration is not None:
+            if switches_set: time.sleep(8)  # leave time for tub to stop
+            logging.info(f"schedule heating in {delay} minutes for {duration} minutes")
+            self.__add_control(controls, TIMER_DURN, duration)
+            logging.info(f"sending duration: {controls}")
+            self._get_api().send_controls(token, self._get_device_id(), controls)
+            time.sleep(8)
+
+            controls = self.__get_empty_control()
+            self.__add_control(controls, TIMER_DELAY, delay)
+            logging.info(f"sending delay: {controls}")
+            self._get_api().send_controls(token, self._get_device_id(), controls)
+        elif delay is not None or duration is not None:
+            raise bestway_exceptions.InvalidArgument("Must specify delay and timer together")
+
 
 # -- ----------------------------------------------------------------------- --
 

@@ -14,9 +14,9 @@ import bestway.bestway_exceptions as bestway_exceptions
 
 # -- ----------------------------------------------------------------------- --
 # constants
+
 AIRJET = 'Airjet'
 AIRJET_V01 = 'Airjet_V01'
-
 
 # -- ----------------------------------------------------------------------- --
 
@@ -64,6 +64,9 @@ class BestwayDevice:
     def get_status(self, token):
         raise NotImplemented()
 
+    def send_controls(self, command):
+        raise NotImplemented()
+
 
 # -- ----------------------------------------------------------------------- --
 
@@ -82,6 +85,7 @@ class BestwayStatus:
         return self.__device_data
 
     # override methods
+
     def get_temp(self):
         raise NotImplemented()
 
@@ -97,10 +101,65 @@ class BestwayStatus:
     def get_heat_is_on(self):
         raise NotImplemented()
 
+    def get_bubble_level(self):
+        raise NotImplemented()
+
     def get_timer_duration(self):
         raise NotImplemented()
 
     def get_timer_delay(self):
         raise NotImplemented()
+
+
+# -- ----------------------------------------------------------------------- --
+
+# BestwayCommand
+# encapsulate a (set of) option(s)
+# allows controls to be batched up and sent in one go
+
+class BestwayCommand:
+
+    def __init__(self):
+        self.__pump = None
+        self.__heat = None
+        self.__temp = None
+        self.__bubbles = None
+        self.__delay = None
+        self.__duration = None
+
+    def set_pump(self, on):
+        self.__pump = on
+
+    def set_heat(self, on):
+        self.__heat = on
+
+    def set_bubbles(self, on):
+        self.__bubbles = on
+
+    def set_target_temp(self, temp):
+        self__temp = temp
+
+    def set_schedule(self, delay, duration):
+        self.__delay = delay
+        self.__duration = duration
+
+    def get_pump(self):
+        return self.__pump
+
+    def get_heat(self):
+        return self.__heat
+
+    def get_target_temp(self):
+        return self.__temp
+
+    def get_bubbles(self):
+        return self.__bubbles
+
+    def get_delay(self):
+        return self.__delay
+
+    def get_duration(self):
+        return self.__duration
+
 
 # -- ----------------------------------------------------------------------- --
