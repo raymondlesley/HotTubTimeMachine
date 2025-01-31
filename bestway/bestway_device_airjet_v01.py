@@ -1,6 +1,8 @@
 """
 Bestway Device Airjet_V01 - implementation of JSON protocol for
                         Lay-z-Spa Airjet_V01 models
+
+devised by reverse-engineering the JSON data exchanged
 """
 
 import logging

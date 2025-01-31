@@ -87,13 +87,6 @@ logging.debug(f"Got device: {device}")
 
 if controlling:
     logging.info("applying controls")
-    """
-    our_device = device.get_device_type()
-    if our_device == 'Airjet':
-        api.set_Airjet_controls(token, cfg.did, pump, heat, temp, bubbles, delay, timer)
-    elif our_device == 'Airjet_V01':
-        api.set_Airjet_V01_controls(token, cfg.did, pump, heat, temp, bubbles, delay, timer)
-    """
     commands = bestway.bestway_device.BestwayCommand()
     if pump: commands.set_pump(pump)
     if heat: commands.set_heat(heat)

@@ -1,6 +1,8 @@
 """
 Bestway Device Airjet - implementation of JSON protocol for
                         Lay-z-Spa Airjet models
+
+devised by reverse-engineering the JSON data exchanged
 """
 
 import bestway.bestway_device

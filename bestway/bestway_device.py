@@ -2,11 +2,8 @@
 Bestway Device - abstraction of Bestway (Lay-z-Spa) device capabilities
 
 This is a base class
-
-devised by reverse-engineering the JSON data exchanged
 """
 
-#import json
 import logging
 
 import bestway.bestwayapi
