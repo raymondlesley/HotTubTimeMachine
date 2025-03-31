@@ -35,6 +35,11 @@ EARTH_STATE = 'bit5'  # according to https://github.com/cdpuk/ha-bestway/issues/
 EARTHED = 1 # TODO: check
 
 # -- ----------------------------------------------------------------------- --
+# constants
+
+COMMAND_DELAY = 10  # gap between sending commands (in seconds)
+
+# -- ----------------------------------------------------------------------- --
 
 class BestwayDeviceAirjet_V01(bestway.bestway_device.BestwayDevice):
 
@@ -83,12 +88,12 @@ class BestwayDeviceAirjet_V01(bestway.bestway_device.BestwayDevice):
             controls = self.__get_empty_control()
 
         if delay is not None and duration is not None:
-            if switches_set: time.sleep(8)  # leave time for tub to stop
+            if switches_set: time.sleep(COMMAND_DELAY)  # leave time for tub to stop
             logging.info(f"schedule heating in {delay} minutes for {duration} minutes")
             self.__add_control(controls, TIMER_DURN, duration)
             logging.info(f"sending duration: {controls}")
             self._get_api().send_controls(token, self._get_device_id(), controls)
-            time.sleep(8)
+            time.sleep(COMMAND_DELAY)
 
             controls = self.__get_empty_control()
             self.__add_control(controls, TIMER_DELAY, delay)
