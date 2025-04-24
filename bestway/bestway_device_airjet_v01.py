@@ -37,7 +37,7 @@ EARTHED = 1 # TODO: check
 # -- ----------------------------------------------------------------------- --
 # constants
 
-COMMAND_DELAY = 10  # gap between sending commands (in seconds)
+COMMAND_DELAY = 15  # gap between sending commands (in seconds)
 
 # -- ----------------------------------------------------------------------- --
 
