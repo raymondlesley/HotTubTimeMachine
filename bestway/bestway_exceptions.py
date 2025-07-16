@@ -20,3 +20,7 @@ class UnknownDevice(Exception):
 class UnsupportedDevice(Exception):
     def __init__(self):
         super().__init__('Unsupported device')
+
+class DeviceOffline(Exception):
+    def __init__(self):
+        super().__init__('Device offline')

@@ -77,19 +77,21 @@ class BestwayAPI:
             if 'did' in device:
                 if device['did'] == device_id:
                     return device
-            else:
-                raise bestway_exceptions.UnsupportedDevice()
+        raise bestway_exceptions.UnsupportedDevice()
 
     def get_device(self, token, device_id):
         raw_device = self._get_device_raw(token, device_id)
         if raw_device:
             if 'product_name' in raw_device:
-                type = raw_device['product_name']
+                device_type = raw_device['product_name']
             else:
                 raise bestway_exceptions.UnsupportedDevice()
-            if type == bestway_device.AIRJET:
+            if ('is_online' in raw_device) & (raw_device['is_online']) == False:
+                raise bestway_exceptions.DeviceOffline()
+
+            if device_type == bestway_device.AIRJET:
                 return BestwayDeviceAirjet(self, device_id, raw_device)
-            elif type == bestway_device.AIRJET_V01:
+            elif device_type == bestway_device.AIRJET_V01:
                 return BestwayDeviceAirjet_V01(self, device_id, raw_device)
             else:
                 raise bestway_exceptions.UnsupportedDevice()
