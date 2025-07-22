@@ -28,6 +28,14 @@ argparser.add_argument('-r', '--raw', action='store_true', help="output raw JSON
 argparser.add_argument('-s', '--sorted', action='store_true', help="sort raw JSON data")
 args = argparser.parse_args()
 
+def toHoursAndMinutes(total_minutes):
+    if total_minutes:
+        hours = total_minutes // 60
+        minutes = total_minutes % 60
+        return f"{hours}:{minutes:02d}"
+    else:
+        return ""
+
 # setup logging
 log_config.prepare_logging(args.loglevel)
 # setup logfile filename
@@ -75,9 +83,13 @@ else:
     temp_unit = device_status.get_temp_unit()
     pump_state = device_status.get_pump_is_on()
     heat_state = device_status.get_heat_is_on()
-    print(f"Temperature is {temp_now}{temp_unit}")
-    print(f"Filter pump is {'ON' if pump_state else 'OFF'}")
-    print(f"Heater is {'ON' if heat_state else 'OFF'}")
+    delay = toHoursAndMinutes(device_status.get_timer_delay())
+    duration = toHoursAndMinutes(device_status.get_timer_duration())
+    print(f"Temperature   : {temp_now}{temp_unit}")
+    print(f"Filter pump   : {'ON' if pump_state else 'OFF'}")
+    print(f"Heater        : {'ON' if heat_state else 'OFF'}")
+    print(f"Heat Delay    : {delay if delay else 'OFF'}")
+    print(f"Heat Duration : {duration if duration else 'OFF'}")
 
 logging.info("Saving configuration")
 cfg.token = dict(token)
