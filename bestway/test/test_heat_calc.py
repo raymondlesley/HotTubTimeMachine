@@ -10,12 +10,12 @@ log_config.prepare_logging(logging.INFO)
 
 class TestHeatCalc(TestCase):
     def test_same_result_1(self):
-        heating = tub_utils.CalcHeatTime_iterate(22 * 60, 36, 38, 350, 40, 9.5 * 60)
+        heating = tub_utils.CalcHeatTime_iterate(36, 38, 350, 40, 9.5 * 60)
         self.assertEqual(heating.start_time, 440, "start_time incorrect")
         self.assertEqual(heating.time_to_heat, 130, "time_to_heat incorrect")
 
     def test_same_result_2(self):
-        heating = tub_utils.CalcHeatTime_algebra(22 * 60, 36, 38, 350, 40, 9.5 * 60)
+        heating = tub_utils.CalcHeatTime_algebra(36, 38, 350, 40, 9.5 * 60)
         self.assertAlmostEqual(heating.start_time, 440, delta=STEP_RATE)
         self.assertAlmostEqual(heating.time_to_heat, 130, delta=STEP_RATE)
 
@@ -28,8 +28,8 @@ class TestHeatCalc(TestCase):
             heat_rate = randint(30, 60)
             time_left = 9.5 * 60  # 07:30 tomorrow
             logging.info(f"Trying: {start_temp}->{target_temp} at {cool_rate}/{heat_rate}")
-            it_heating = tub_utils.CalcHeatTime_iterate(start_time, start_temp, target_temp, cool_rate, heat_rate, time_left)
-            al_heating = tub_utils.CalcHeatTime_algebra(start_time, start_temp, target_temp, cool_rate, heat_rate, time_left)
+            it_heating = tub_utils.CalcHeatTime_iterate(start_temp, target_temp, cool_rate, heat_rate, time_left)
+            al_heating = tub_utils.CalcHeatTime_algebra(start_temp, target_temp, cool_rate, heat_rate, time_left)
             if (it_heating.start_time is None):
                 try:
                     self.assertEqual(al_heating.start_time, None)

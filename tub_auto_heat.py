@@ -10,11 +10,13 @@ import log_config
 import os
 import sys
 import datetime
+import time
 
 from configuration import Configuration
 from bestway.bestwayapi import BestwayAPI
 from bestway.bestway_user_token import BestwayUserToken
 import bestway.bestway_device as bestway_device
+import tub_utils
 
 # CONSTANTS
 CFGFILENAME = 'configuration.json'
@@ -76,6 +78,7 @@ controlling = False
 pump = None
 temp = None
 eco = None
+temp_target = None
 
 if args.display:
     logging.info("Displaying current schedule settings")
@@ -93,6 +96,29 @@ if args.economyseven:
     logging.info(f"Programming target heat for {args.economyseven}")
     eco = args.economyseven
 
+
+# ---------------------------------------------------------------------------
+
+def send_to_tub(set_pump, set_target_temp, set_start_time, set_time_to_heat):
+    logging.info("Sending to Hot Tub")
+    commands = bestway_device.BestwayCommand()
+    if set_pump is not None: commands.set_pump(set_pump)
+    if args.temp: commands.set_target_temp(int(set_target_temp))
+    if set_start_time and set_time_to_heat: commands.set_schedule(set_start_time, set_time_to_heat)
+    device.send_controls(token, commands)
+
+
+# ---------------------------------------------------------------------------
+
+def check_heat_schedule(set_start_time, set_time_to_heat):
+    device_status_now = device.get_status(token)
+    timer_delay_now = device_status_now.get_timer_delay()
+    timer_duration_now = device_status_now.get_timer_duration()
+    logging.info(f"Tub start_time={timer_delay_now}, time_to_heat={timer_duration_now}")
+    return (set_start_time == timer_delay_now) and (set_time_to_heat == timer_duration_now)
+
+# ---------------------------------------------------------------------------
+
 timenow = datetime.datetime.now()
 minutes_now = timenow.hour * 60 + timenow.minute
 logging.debug(f"Time now = {timenow.hour}:{timenow.minute} ({minutes_now} minutes)")
@@ -108,47 +134,42 @@ logging.info(f"Got device: {device}")
 
 device_status = device.get_status(token)
 temp_now = device_status.get_temp()
-if not args.temp:
-    temp_target = device_status.get_target_temp()
+if not temp_target: temp_target = device_status.get_target_temp()
 
 if controlling:
-    logging.info("calculating start and duration")
-    time_to_heat = 0
-    tracked_temp = float(temp_now)
-    target_temp = float(temp_target)
-    if args.temp: target_temp = float(args.temp)
-    logging.debug(f"Temp now = {tracked_temp}")
-    start_time = 0
-    logging.debug(f"target temperature {target_temp} in {minutes_to_go} minutes")
-    # TODO: convert iterative algorithm to use algebraic calculation
-    #       From symbolab.com/solver: heat_time = (Tend - Tstart + cool_rate * total_time) /  (heat_rate + cool_rate)
-    #       (See my Google sheet "Hot Hub Heating Timer")
-    while (start_time + time_to_heat) < minutes_to_go:
-        # walk forwards from now until the time to start heating is reached
-        start_time += STEP_RATE
-        tracked_temp -= STEP_RATE / cool_rate
-        time_to_heat = int((target_temp - tracked_temp) * heat_rate)
-        logging.debug(f"temp after {start_time} minutes = {tracked_temp:.1f}; {time_to_heat} mins heating needed")
-    if time_to_heat > 0:
-        if time_to_heat > ECO_MINS: time_to_heat = ECO_MINS
-        start_time = minutes_to_go - time_to_heat
-        logging.info(f"Setting timer to start in {start_time} minutes; heat for {time_to_heat} minutes")
-    elif time_to_heat <= 0:
-        # -ve heating time - indicates will still be > target temperature after cooling
-        start_time = None
-        time_to_heat= None
-        logging.info(f"temperature ({float(attrs['temp_now'])}) projected to end at {tracked_temp:.1f} - over setpoint {target_temp}")
+    attempts = 3
+    while attempts:
+        logging.info("calculating start and duration")
+        time_to_heat = 0
+        tracked_temp = float(temp_now)
+        target_temp = float(temp_target)
+        if args.temp: target_temp = float(args.temp)
+        logging.debug(f"Temp now = {tracked_temp}")
+        logging.debug(f"target temperature {target_temp} in {minutes_to_go} minutes")
 
-    logging.info("Sending to Hot Tub")
-    commands = bestway_device.BestwayCommand()
-    if pump is not None: commands.set_pump(pump)
-    if args.temp: commands.set_target_temp(int(target_temp))
-    if start_time and time_to_heat: commands.set_schedule(start_time, time_to_heat)
-    device.send_controls(token, commands)
+        # calculate heating delay and duration
+        heating = tub_utils.CalcHeatTime(tracked_temp, target_temp, cool_rate, heat_rate, minutes_to_go)
+        start_time = heating.start_time
+        time_to_heat = heating.time_to_heat
+
+        # orchestrate Tub commands
+        if not args.temp: target_temp = None  # skip (re)setting target temp
+        send_to_tub(pump, target_temp, start_time, time_to_heat)
+        # check commands
+        time.sleep(5) # wait 5 seconds
+        if check_heat_schedule(start_time, time_to_heat):
+            attempts = 0  # all done
+        else:
+            logging.info("Tub programming failed. Trying again")
+            attempts -= 1  # try again
+            if attempts == 0:
+                logging.error("Tub programming failed. Time schedule not set")
 
 else:
     timer_durn = device_status.get_timer_duration()
     timer_delay = device_status.get_timer_delay()
+    temp_target = device_status.get_target_temp()
+    temp_now = device_status.get_temp()
     print(f"Target temperature {temp_target}")
     print(f"Temperature now {temp_now}")
     print(f"Programmed to heat for {timer_durn} minutes, starting in {timer_delay} minutes")
