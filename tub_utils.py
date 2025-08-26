@@ -1,9 +1,5 @@
 import logging
 
-from asn1crypto.core import Integer
-
-# import bestway
-
 # ---------------------------------------------------------------------------
 
 ECO_MINS    = 7 * 60
@@ -12,8 +8,8 @@ STEP_RATE   = 10  # minutes per iteration for calculating heat time
 from typing import NamedTuple
 
 class tub_heating(NamedTuple):
-    start_time: Integer
-    time_to_heat: Integer
+    start_time: int
+    time_to_heat: int
 
 def CalcHeatTime_iterate(start_temp, target_temp, cool_rate, heat_rate, time_left):
     logging.info("calculating start and duration (iterative)")
@@ -59,8 +55,7 @@ def CalcHeatTime_algebra(start_temp, target_temp, cool_rate, heat_rate, time_lef
     # From symbolab.com/solver: heat_time = (Tend - Tstart + cool_rate * total_time) /  (heat_rate + cool_rate)
     # (See my Google sheet "Hot Hub Heating Timer")
 
-    time_to_heat = (target_temp - tracked_temp + cool_rate * time_left) / (heat_rate + cool_rate)
-    start_time = time_left - time_to_heat
+    time_to_heat = int((target_temp - tracked_temp + cool_rate * time_left) / (heat_rate + cool_rate))
 
     if time_to_heat > 0:
         if time_to_heat > ECO_MINS: time_to_heat = ECO_MINS
