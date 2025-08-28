@@ -51,7 +51,7 @@ cfg = Configuration.fromFile(args.cfgfile)
 # check Gizwits URL
 if not cfg['gizwits_url']:
     cfg.gizwits_url = GIZWITS_URL
-    logging.info(f"Using {cfg.gizwits_url}")
+    logging.debug(f"Using {cfg.gizwits_url}")
 
 # open API
 api = BestwayAPI(cfg.gizwits_url)
@@ -100,7 +100,7 @@ if args.economyseven:
 # ---------------------------------------------------------------------------
 
 def send_to_tub(set_pump, set_target_temp, set_start_time, set_time_to_heat):
-    logging.info("Sending to Hot Tub")
+    logging.debug("Sending to Hot Tub")
     commands = bestway_device.BestwayCommand()
     if set_pump is not None: commands.set_pump(set_pump)
     if args.temp: commands.set_target_temp(int(set_target_temp))
@@ -114,7 +114,7 @@ def check_heat_schedule(set_start_time, set_time_to_heat):
     device_status_now = device.get_status(token)
     timer_delay_now = device_status_now.get_timer_delay()
     timer_duration_now = device_status_now.get_timer_duration()
-    logging.info(f"Tub start_time={timer_delay_now}, time_to_heat={timer_duration_now}")
+    logging.debug(f"Tub start_time={timer_delay_now}, time_to_heat={timer_duration_now}")
     return (set_start_time == timer_delay_now) and (set_time_to_heat == timer_duration_now)
 
 # ---------------------------------------------------------------------------
@@ -127,18 +127,19 @@ logging.debug(times)
 minutes = int(times[0]) * 60 + int(times[1])
 logging.debug(minutes)
 minutes_to_go = minutes + 24 * 60 - minutes_now
-logging.info(f"Economy 7 ends in {minutes_to_go} minutes")
+logging.debug(f"Economy 7 ends in {minutes_to_go} minutes")
 
 device = api.get_device(token, cfg.did)
-logging.info(f"Got device: {device}")
+logging.debug(f"Got device: {device}")
 
 device_status = device.get_status(token)
 temp_now = device_status.get_temp()
 if not temp_target: temp_target = device_status.get_target_temp()
 
 if controlling:
-    attempts = 3
-    while attempts:
+    retries = [5, 8, 13, 21, 34, 55] # fibonacci delays for backoff-and-retry
+    attempts = len(retries) + 1
+    for retry_delay in retries: # while attempts:
         logging.info("calculating start and duration")
         time_to_heat = 0
         tracked_temp = float(temp_now)
@@ -151,20 +152,26 @@ if controlling:
         heating = tub_utils.CalcHeatTime(tracked_temp, target_temp, cool_rate, heat_rate, minutes_to_go)
         start_time = heating.start_time
         time_to_heat = heating.time_to_heat
+        logging.info(f"Programming heat cycle for {time_to_heat} minutes after {start_time} minutes")
 
         # orchestrate Tub commands
         if not args.temp: target_temp = None  # skip (re)setting target temp
         send_to_tub(pump, target_temp, start_time, time_to_heat)
         # check commands
-        time.sleep(5) # wait 5 seconds
+        time.sleep(5) # wait 5 seconds, then check status
         if check_heat_schedule(start_time, time_to_heat):
-            attempts = 0  # all done
+            # all done
+            attempts = 0
+            break
         else:
-            logging.info("Tub programming failed. Trying again")
-            attempts -= 1  # try again
             if attempts == 0:
+                # out of retries
                 logging.error("Tub programming failed. Time schedule not set")
-
+            else:
+                # try again
+                logging.info("Tub programming failed. Trying again")
+                attempts -= 1
+                time.sleep(retry_delay)  # wait before retrying
 else:
     timer_durn = device_status.get_timer_duration()
     timer_delay = device_status.get_timer_delay()

@@ -30,12 +30,12 @@ def CalcHeatTime_iterate(start_temp, target_temp, cool_rate, heat_rate, time_lef
     if time_to_heat > 0:
         if time_to_heat > ECO_MINS: time_to_heat = ECO_MINS
         start_time = time_left - time_to_heat
-        logging.info(f"Setting timer to start in {start_time} minutes; heat for {time_to_heat} minutes")
+        logging.debug(f"Setting timer to start in {start_time} minutes; heat for {time_to_heat} minutes")
     elif time_to_heat <= 0:
         # -ve heating time - indicates will still be > target temperature after cooling
         start_time = None
         time_to_heat= None
-        logging.info(f"temperature ({start_temp}) projected to end at {tracked_temp:.1f} - over setpoint {target_temp}")
+        logging.debug(f"temperature ({start_temp}) projected to end at {tracked_temp:.1f} - over setpoint {target_temp}")
 
     return tub_heating(start_time, time_to_heat)
 
@@ -60,13 +60,13 @@ def CalcHeatTime_algebra(start_temp, target_temp, cool_rate, heat_rate, time_lef
     if time_to_heat > 0:
         if time_to_heat > ECO_MINS: time_to_heat = ECO_MINS
         start_time = time_left - time_to_heat
-        logging.info(f"Setting timer to start in {start_time:.1f} minutes; heat for {time_to_heat:.1f} minutes")
+        logging.debug(f"Setting timer to start in {start_time:.1f} minutes; heat for {time_to_heat:.1f} minutes")
         return tub_heating(int(start_time), int(time_to_heat))
     elif time_to_heat <= 0:
         # -ve heating time - indicates will still be > target temperature after cooling
         start_time = None
         time_to_heat= None
-        logging.info(f"current temperature ({start_temp}) projected to remain over target {target_temp}")
+        logging.debug(f"current temperature ({start_temp}) projected to remain over target {target_temp}")
         return tub_heating(None, None)
 
 

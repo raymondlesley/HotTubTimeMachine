@@ -33,7 +33,7 @@ class BestwayAPI:
 
     def __init__(self, baseURL):
         self.baseURL = baseURL
-        logging.info(f"initializing Bestway API with {baseURL}")
+        logging.debug(f"initializing Bestway API with {baseURL}")
 
     def is_token_expired(self, token):
         return time.gmtime(token.expiry) < time.gmtime()
@@ -41,9 +41,9 @@ class BestwayAPI:
     def get_user_token(self, username, password) -> BestwayUserToken:
         """perform login, return token"""
         body = {"username": username, "password": password, "lang": "en"}
-        logging.info("logging in")
+        logging.debug("logging in")
         r = self._post("/app/login", dict(HEADERS), body)
-        logging.info(f"login response: {r}")
+        logging.debug(f"login response: {r}")
         return BestwayUserToken.from_values(r["uid"], r["token"], r["expire_at"])
 
     def check_login(self, token, username, password) -> BestwayUserToken:
@@ -68,7 +68,7 @@ class BestwayAPI:
         """retrieve current device status"""
         if self.is_token_expired(token):
             raise bestway_exceptions.InvalidToken()
-        logging.info(f"getting info for device {device_id}")
+        logging.debug(f"getting info for device {device_id}")
         return self._get(f"/app/devdata/{device_id}/latest", self._get_headers(token))
 
     def _get_device_raw(self, token, device_id):
@@ -100,7 +100,7 @@ class BestwayAPI:
 
     def send_controls(self, token, device_id, controls):
         logging.debug(f"controls: {controls}")
-        logging.info("sending controls")
+        logging.debug("sending controls")
         self._post(f"/app/control/{device_id}", self._get_headers(token), controls)
 
     def _get_headers(self, user_token):

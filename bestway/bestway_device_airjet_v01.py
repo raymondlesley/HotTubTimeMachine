@@ -64,41 +64,41 @@ class BestwayDeviceAirjet_V01(bestway.bestway_device.BestwayDevice):
 
         controls = self.__get_empty_control()
 
-        logging.info("Setting switch controls")
+        logging.debug("Setting switch controls")
         switches_set = False
         if pump is not None:
-            logging.info(f"pump: {'ON' if pump else 'OFF'}")
+            logging.debug(f"pump: {'ON' if pump else 'OFF'}")
             self.__add_control(controls, PUMP_STATE, PUMP_STATE_ON if pump else PUMP_STATE_OFF)
             switches_set = True
         if heat is not None:
-            logging.info(f"heat: {'ON' if heat else 'OFF'}")
+            logging.debug(f"heat: {'ON' if heat else 'OFF'}")
             self.__add_control(controls, HEAT_STATE, HEAT_STATE_ON if heat else HEAT_STATE_OFF)
             switches_set = True
         if temp is not None:
-            logging.info(f"set temperature to {temp}")
+            logging.debug(f"set temperature to {temp}")
             self.__add_control(controls, TEMP_TARGET, temp)
             switches_set = True
         if bubbles is not None:
-            logging.info(f"turn bubbles {'ON' if bubbles else 'OFF'}")
+            logging.debug(f"turn bubbles {'ON' if bubbles else 'OFF'}")
             self.__add_control(controls, BUBBLES, BUBBLES_ON if bubbles else BUBBLES_OFF)
             switches_set = True
 
         if switches_set:
-            logging.info("passing switch controls to API")
+            logging.debug("passing switch controls to API")
             self._get_api().send_controls(token, self._get_device_id(), controls)
             controls = self.__get_empty_control()
 
         if delay is not None and duration is not None:
             if switches_set: time.sleep(STOP_DELAY)  # leave time for tub to stop
-            logging.info(f"schedule heating in {delay} minutes for {duration} minutes")
+            logging.debug(f"schedule heating in {delay} minutes for {duration} minutes")
             self.__add_control(controls, TIMER_DURN, duration)
-            logging.info(f"sending duration: {controls}")
+            logging.debug(f"sending duration: {controls}")
             self._get_api().send_controls(token, self._get_device_id(), controls)
             time.sleep(PROG_DELAY)
 
             controls = self.__get_empty_control()
             self.__add_control(controls, TIMER_DELAY, delay)
-            logging.info(f"sending delay: {controls}")
+            logging.debug(f"sending delay: {controls}")
             self._get_api().send_controls(token, self._get_device_id(), controls)
         elif delay is not None or duration is not None:
             raise bestway_exceptions.InvalidArgument("Must specify delay and timer together")
