@@ -110,12 +110,22 @@ def send_to_tub(set_pump, set_target_temp, set_start_time, set_time_to_heat):
 
 # ---------------------------------------------------------------------------
 
+TOLERANCE = 1 # minutes grace
+def nearly_equal(base, comparison):
+    return abs(base - comparison) <= TOLERANCE
+
+
+# ---------------------------------------------------------------------------
+
 def check_heat_schedule(set_start_time, set_time_to_heat):
     device_status_now = device.get_status(token)
     timer_delay_now = device_status_now.get_timer_delay()
     timer_duration_now = device_status_now.get_timer_duration()
     logging.debug(f"Tub start_time={timer_delay_now}, time_to_heat={timer_duration_now}")
-    return (set_start_time == timer_delay_now) and (set_time_to_heat == timer_duration_now)
+    logging.debug(f"Set start_time={set_start_time}, time_to_heat={set_time_to_heat}")
+    # compare setting with setpoint - allowing for time difference
+    return nearly_equal(set_start_time, timer_delay_now) and nearly_equal(set_time_to_heat, timer_duration_now)
+
 
 # ---------------------------------------------------------------------------
 
