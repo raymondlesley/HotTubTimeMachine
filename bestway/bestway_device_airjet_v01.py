@@ -38,7 +38,7 @@ EARTHED = 1 # TODO: check
 # constants
 
 STOP_DELAY = 15  # gap between stop command and subsequent commands
-PROG_DELAY = 5  # gap between delay and heat commands`
+PROG_DELAY = 3  # gap between delay and heat commands`
 
 # -- ----------------------------------------------------------------------- --
 
