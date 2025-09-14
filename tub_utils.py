@@ -12,7 +12,7 @@ class tub_heating(NamedTuple):
     time_to_heat: int
 
 def CalcHeatTime_iterate(start_temp, target_temp, cool_rate, heat_rate, time_left):
-    logging.info("calculating start and duration (iterative)")
+    logging.debug("calculating start and duration (iterative)")
     time_to_heat = 0
     tracked_temp = float(start_temp)
     target_temp = float(target_temp)
@@ -42,7 +42,7 @@ def CalcHeatTime_iterate(start_temp, target_temp, cool_rate, heat_rate, time_lef
 # ---------------------------------------------------------------------------
 
 def CalcHeatTime_algebra(start_temp, target_temp, cool_rate, heat_rate, time_left):
-    logging.info("calculating start and duration (algebraic)")
+    logging.debug("calculating start and duration (algebraic)")
     time_to_heat = 0
     tracked_temp = float(start_temp)
     target_temp = float(target_temp)

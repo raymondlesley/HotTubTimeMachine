@@ -43,7 +43,7 @@ log_config.prepare_logging(args.loglevel)
 # setup logfile filename
 if not args.cfgfile:
     args.cfgfile = os.path.join(os.path.dirname(sys.argv[0]), CFGFILENAME)
-    logging.info(f"using configuration file {args.cfgfile}")
+    logging.debug(f"using configuration file {args.cfgfile}")
 
 logging.info("Load configuration from file...")
 cfg = Configuration.fromFile(args.cfgfile)
@@ -117,10 +117,9 @@ def nearly_equal(base, comparison):
 
 # ---------------------------------------------------------------------------
 
-def check_heat_schedule(set_start_time, set_time_to_heat):
-    device_status_now = device.get_status(token)
-    timer_delay_now = device_status_now.get_timer_delay()
-    timer_duration_now = device_status_now.get_timer_duration()
+def check_heat_schedule(set_start_time, set_time_to_heat, device_status):
+    timer_delay_now = device_status.get_timer_delay()
+    timer_duration_now = device_status.get_timer_duration()
     logging.debug(f"Tub start_time={timer_delay_now}, time_to_heat={timer_duration_now}")
     logging.debug(f"Set start_time={set_start_time}, time_to_heat={set_time_to_heat}")
     # compare setting with setpoint - allowing for time difference
@@ -150,7 +149,7 @@ if controlling:
     retries = [5, 8, 13, 21, 34, 55] # fibonacci delays for backoff-and-retry
     attempts = len(retries) + 1
     for retry_delay in retries: # while attempts:
-        logging.info("calculating start and duration")
+        logging.debug("calculating start and duration")
         time_to_heat = 0
         tracked_temp = float(temp_now)
         target_temp = float(temp_target)
@@ -169,17 +168,20 @@ if controlling:
         send_to_tub(pump, target_temp, start_time, time_to_heat)
         # check commands
         time.sleep(5) # wait 5 seconds, then check status
-        if check_heat_schedule(start_time, time_to_heat):
+        device_status = device.get_status(token)
+        if check_heat_schedule(start_time, time_to_heat, device_status):
             # all done
             attempts = 0
             break
         else:
+            timer_delay_now = device_status_now.get_timer_delay()
+            timer_duration_now = device_status_now.get_timer_duration()
             if attempts == 0:
                 # out of retries
-                logging.error("Tub programming failed. Time schedule not set")
+                logging.error(f"Tub programming failed ({timer_delay_now}/{timer_duration_now}). Time schedule not set")
             else:
                 # try again
-                logging.info("Tub programming failed. Trying again")
+                logging.info(f"Tub programming failed ({timer_delay_now}/{timer_duration_now}). Trying again")
                 attempts -= 1
                 time.sleep(retry_delay)  # wait before retrying
 else:
