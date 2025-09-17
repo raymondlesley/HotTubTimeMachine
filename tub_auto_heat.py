@@ -174,8 +174,8 @@ if controlling:
             attempts = 0
             break
         else:
-            timer_delay_now = device_status_now.get_timer_delay()
-            timer_duration_now = device_status_now.get_timer_duration()
+            timer_delay_now = device_status.get_timer_delay()
+            timer_duration_now = device_status.get_timer_duration()
             if attempts == 0:
                 # out of retries
                 logging.error(f"Tub programming failed ({timer_delay_now}/{timer_duration_now}). Time schedule not set")
